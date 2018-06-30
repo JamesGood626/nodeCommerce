@@ -1,0 +1,7 @@
+html
+  head
+    title= title
+  body
+    for obj in modelList
+      for name in obj.modelFieldValues
+        a(href=`/${ modelKey }/detail/${ obj.id }`)= name

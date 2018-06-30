@@ -1,0 +1,25 @@
+{
+    "defaultSeverity": "error",
+    "extends": [
+        "tslint:recommended"
+    ],
+    "jsRules": {},
+    "rules": {
+        "member-ordering": false,
+        "no-console": false,
+        "object-literal-sort-keys": false,
+        "ordered-imports": false,
+        "quotemark": false,
+        "trailing-comma": false
+    },
+    "linterOptions": {
+        "exclude": [
+            "config/**/*.js",
+            "node_modules/**/*.ts"
+        ]
+    },
+    "rulesDirectory": []
+}
+
+/* tslint:disable: no-console */
+/* tslint:disable: member-ordering */

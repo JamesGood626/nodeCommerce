@@ -1,0 +1,8 @@
+html
+  head
+    title= title
+  body
+    for name in modelFieldNames
+      div= name
+        for property in documentModel
+          div= property

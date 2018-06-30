@@ -1,0 +1,7 @@
+html
+  head
+    title= title
+  body
+    for name in dBSchemaNames
+                div
+                  a(href=name.toLowerCase()+'/list')= name
