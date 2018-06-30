@@ -4,7 +4,7 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "prompt": "ts-node ../prompt.ts",
+    "prompt": "ts-node ./prompt.ts",
     "start": "ts-node ./index.ts",
     "server": "./node_modules/nodemon/bin/nodemon.js",
     "client": "npm run start --prefix ../client",

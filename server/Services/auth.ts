@@ -54,7 +54,7 @@ export const login = (email, password, req): Promise<IUserModel | Error> => {
 
 // will return email indication for client to redirect to protected resources
 export const updatePassword =
-(email, oldPassword, newPassword): Promise<string | Model<IUserModel> | Model<ISuperUserModel>> => {
+(email, oldPassword, newPassword): Promise<string | IUserModel| ISuperUserModel> => {
   return new Promise((resolve, reject) => {
     User.findOne({ email }, (err, user: any) => {
       if (err) { return reject(err); }

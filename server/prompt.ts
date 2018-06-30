@@ -1,7 +1,7 @@
 import * as repl from 'repl';
 import * as readline from 'readline';
-import { initMongoMongooseConnection } from './server/Middleware';
-import { createSuperUser } from './server/Services/auth';
+import { initMongoMongooseConnection } from './Middleware';
+import { createSuperUser } from './Services/auth';
 
 const superUserConfig = { username: '', password: '' };
 
