@@ -1,5 +1,6 @@
 {
     "compilerOptions": {
+        "rootDir": ".",
         "outDir": "./build",
         // "strict": true,
         "allowJs": true,
@@ -13,6 +14,6 @@
         "lib": ["es6", "dom", "esnext.asynciterable"]
     },
     "include": [
-        "./src/**/*.ts"
+        "./**/*.ts"
     ]
 }

@@ -6,12 +6,12 @@ const saltRounds = 10;
 
 // user type needs to be an interface too O; Maybe?
 export const hashPassword =
-(user: any, password: string): Promise<Model<ISuperUserModel>> | Promise<Model<ISuperUserModel>> => {
+(user: any, password: string): Promise<IUserModel | ISuperUserModel> => {
   return new Promise((resolve: any, reject: any): void => {
     bcrypt.genSalt(saltRounds, (err, salt) => {
-      bcrypt.hash(password, salt, (error, hash) => {
+      bcrypt.hash(password, salt, async (error, hash) => {
         user.password = hash;
-        user.save();
+        await user.save();
         resolve(user);
       });
     });
