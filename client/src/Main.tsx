@@ -1,29 +1,27 @@
 import * as React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import { Route, Switch } from 'react-router-dom';
 // import { Query } from 'react-apollo'
 // import gql from "graphql-tag"
 
-// import home from './AppPages/home';
-// import Login from './AppPages/Login';
-// import Register from './AppPages/Register';
-import Admin from './Admin';
-import Main from './Admin';
+import home from './AppPages/home';
+import Login from './AppPages/Login';
+import Register from './AppPages/Register';
+
 import './App.css';
 
-class App extends React.Component {
+class Main extends React.Component {
   public render() {
     return (
-      <BrowserRouter>
       <Switch>
-        <Route exact={ true } path="/admin" component={ Admin }/>
-        <Route path="/*" component={ Main }/>
+        <Route exact={ true } path='/' component={ home } />
+        <Route path='/register' component={ Register } />
+        <Route path='/login' component={ Login } />
       </Switch>
-    </BrowserRouter>
     );
   }
 }
 
-export default App;
+export default Main;
 
 // {/* <Query
 //         query={gql`
