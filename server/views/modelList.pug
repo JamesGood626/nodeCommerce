@@ -2,6 +2,7 @@ html
   head
     title= title
   body
+    h1= `${modelKey}s`
     for obj in modelList
       for name in obj.modelFieldValues
-        a(href=`/${ modelKey }/detail/${ obj.id }`)= name
+        a(href=`/admin/${ modelKey.toLowerCase() }/detail/${ obj.id }`)= name

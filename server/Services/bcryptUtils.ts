@@ -12,7 +12,7 @@ export const hashPassword =
       bcrypt.hash(password, salt, async (error, hash) => {
         user.password = hash;
         await user.save();
-        resolve(user);
+        return resolve(user);
       });
     });
   });

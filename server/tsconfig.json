@@ -1,19 +1,17 @@
 {
-    "compilerOptions": {
-        "rootDir": ".",
-        "outDir": "./build",
-        // "strict": true,
-        "allowJs": true,
-        "sourceMap": true,
-        "noImplicitReturns": true,
-        "noImplicitThis": true,
-        // "noImplicitAny": true,
-        "strictNullChecks": true,
-        "moduleResolution": "node",
-        "target": "es5",
-        "lib": ["es6", "dom", "esnext.asynciterable"]
-    },
-    "include": [
-        "./**/*.ts"
-    ]
+  "compilerOptions": {
+    "rootDir": ".",
+    "outDir": "./build",
+    // "strict": true,
+    "allowJs": true,
+    "sourceMap": true,
+    "noImplicitReturns": true,
+    "noImplicitThis": true,
+    // "noImplicitAny": true,
+    "strictNullChecks": true,
+    "moduleResolution": "node",
+    "target": "es5",
+    "lib": ["es6", "dom", "esnext.asynciterable"]
+  },
+  "include": ["./**/*.ts"]
 }

@@ -1,24 +1,24 @@
-import * as React from 'react';
-import { BrowserRouter, Route, Switch } from 'react-router-dom';
+import * as React from "react";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 // import { Query } from 'react-apollo'
 // import gql from "graphql-tag"
 
 // import home from './AppPages/home';
 // import Login from './AppPages/Login';
 // import Register from './AppPages/Register';
-import Admin from './Admin';
-import Main from './Admin';
-import './App.css';
+import Admin from "./Admin";
+import Main from "./Admin";
+import "./App.css";
 
 class App extends React.Component {
   public render() {
     return (
       <BrowserRouter>
-      <Switch>
-        <Route exact={ true } path="/admin" component={ Admin }/>
-        <Route path="/*" component={ Main }/>
-      </Switch>
-    </BrowserRouter>
+        <Switch>
+          <Route exact={true} path="/admin" component={Admin} />
+          <Route path="/*" component={Main} />
+        </Switch>
+      </BrowserRouter>
     );
   }
 }
@@ -39,7 +39,6 @@ export default App;
 //           return `Hello ${ data.hello }`
 //         }}
 //       </Query> */}
-
 
 // state = {
 //     username: '',
@@ -71,7 +70,7 @@ export default App;
 //         password: updatedInput
 //       }))
 //     }
-    
+
 //   }
 
 //   render() {

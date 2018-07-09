@@ -6,36 +6,35 @@ import { User, IUserModel } from '../API/Accounts/Models/user';
 import { SuperUser, ISuperUserModel } from '../API/SuperUser/Models/superUser';
 
 export const createUser = (email: string, password: string): Promise<object> => {
-  return new Promise((resolve, reject) => {
-    User.findOne({ email }, (err, user) => {
-      // figure out how to properly handle the two if cases for client side
-      if (err) { return err; }
-      if (user) {
-        return false;
-      }
+  return new Promise(async (resolve, reject) => {
+    const user = await User.findOne({ email })
+      .then((result) => result)
+      .catch((err) => console.log(err.message));
+    if (user) {
+      return false;
+    } else {
       const newUser = new User({ email });
-      resolve(hashPassword(newUser, password));
-    });
+      return resolve(hashPassword(newUser, password));
+    }
   });
 };
 
 export const createSuperUser = (username: string, password: string): Promise<object> => {
-  return new Promise((resolve, reject) => {
-    User.findOne({ username }, (err, user) => {
+  return new Promise(async (resolve, reject) => {
+    await User.findOne({ username }, (err, user) => {
       // figure out how to properly handle the two if cases for client side
       if (err) { return err; }
       if (user) {
         return false;
       }
-      console.log("HERE'S THE USERNAME: ", username);
       const newSuperUser = new SuperUser({ username });
-      console.log("HERE'S THE NEW SUPER USER: ", newSuperUser);
       resolve(hashPassword(newSuperUser, password));
     });
   });
 };
 
 export const login = (email, password, req): Promise<IUserModel | Error> => {
+  console.log("Login is running.");
   return new Promise((resolve, reject) => {
     passport.authenticate('local', (err, user, info, status) => {
       if (err) { return reject(err); }

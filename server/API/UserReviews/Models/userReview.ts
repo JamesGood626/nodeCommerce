@@ -11,10 +11,9 @@ interface IUserReview {
 export interface IUserReviewModel extends IUserReview, Document {}
 
 export const userReviewSchema: Schema = new Schema({
-  user_id: {
-    type: Number,
-    unique: true,
-    required: true
+  reviewer: {
+    type: Schema.Types.ObjectId,
+    ref: 'User'
   },
   rating: {
     type: Number,
@@ -27,6 +26,9 @@ export const userReviewSchema: Schema = new Schema({
   date_time: {
     type: Date,
     default: Date.now
+  },
+  edited_date: {
+    type: Date
   }
 });
 

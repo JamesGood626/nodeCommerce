@@ -9,7 +9,7 @@ import * as expressGraphQL from 'express-graphql';
 import * as session from 'express-session';
 import * as mongoose from 'mongoose';
 import * as passport from 'passport';
-import * as passportLocal from 'passport-local'
+import * as passportLocal from 'passport-local';
 import * as redis from 'redis';
 import { MergedGraphQLSchema } from '../API';
 // import Schema from '../API/Accounts/Schema'
@@ -18,6 +18,8 @@ import {
   REDIS_SECRET,
   MONGO_URI
 } from '../Config';
+
+(mongoose as any).Promise = Promise;
 
 const RedisStore = connectRedis(session);
 const LocalStrategy = passportLocal.Strategy;
@@ -60,20 +62,17 @@ export const initPassport = (app: any) => {
       usernameField: 'email',
       passwordField: 'password'
     },
-    (email, password, done: any) => {
-      console.log("VALUES INSIDE PASSPORT MIDDLEWARE CB: ", email, password);
-      User.findOne({ email }, (err: any, user: any) => {
-        console.log("THIS IS THE USER: ", user.password);
-        if (err) { return done(err); }
-        if (!user) {
-          return done(null, false, { message: 'Incorrect email.' });
-        }
-        if (!bcrypt.compareSync(password, user.password)) {
-          return done(null, false, { message: 'Incorrect password.' });
-        }
-        console.log('Made it to return done');
-        return done(null, user);
-      });
+    async (email, password, done: any) => {
+      const user = await User.findOne({ email })
+        .then((result) => result)
+        .catch((err) => console.log("Error retrieving user in passport strategy: ", err));
+      if (!user) {
+        return done(null, false, { message: 'Incorrect email.' });
+      }
+      if (!bcrypt.compareSync(password, (user as any).password)) {
+        return done(null, false, { message: 'Incorrect password.' });
+      }
+      return done(null, user);
     }
   ));
 

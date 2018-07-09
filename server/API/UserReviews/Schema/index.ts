@@ -1,73 +1,57 @@
 // import * as axios from 'axios';
 // import * as graphql from 'graphql';
-import UserReviewTypeDef from './UserReviewType';
 import { makeExecutableSchema } from 'graphql-tools';
-// import { createReview } from '../../../Services/userReviewUtils';
-// const { 
-//   GraphQLObjectType,
-//   GraphQLID,
-//   GraphQLString,
-//   GraphQLInt,
-//   GraphQLSchema,
-//   GraphQLList,
-//   GraphQLNonNull
-// } = graphql
+import { GraphQLScalarType } from 'graphql';
+import { Kind } from 'graphql/language';
+import UserReviewTypeDef from './UserReviewType';
+import resolvers from './resolvers';
 
-
-
-
-
-// const mutation = new GraphQLObjectType({
-//   name: 'Mutation',
-//   fields: {
-//     createReview: {
-//       type: UserReviewType,
-//       args: {
-//         user_id: { type: new GraphQLNonNull(GraphQLID) },
-//         rating: { type: new GraphQLNonNull(GraphQLInt) },
-//         comment: { type: new GraphQLNonNull(GraphQLInt) }
-//       },
-//       resolve(parentValue, { rating, comment }) {
-//         return createReview(rating, comment)
-//       }
-//     },
-//   }
-// })
-
-
-
-
-
-// const RootQuery = new GraphQLObjectType({
-//   name: 'RootQueryType',
-//   fields: {
-//     world: {
-//       type: GraphQLString,
-//       resolve() {
-//         return 'world'
-//       }
-//     }
-//   }
-// })
-
-// export const userReviewSchema = new GraphQLSchema({
-//   query: RootQuery,
-//   mutation
-// })
+const customDateScalarType = {
+  Date: new GraphQLScalarType({
+    name: 'Date',
+    description: 'Date custom scalar type',
+    parseValue(value) {
+      return new Date(value); // value from the client
+    },
+    serialize(value) {
+      return value.getTime(); // value sent to the client
+    },
+    parseLiteral(ast) {
+      if (ast.kind === Kind.INT) {
+        return parseInt(ast.value, 10); // ast value is always in string format
+      }
+      return null;
+    },
+  }),
+};
 
 const RootQuery = `
-  type RootQuery {
-    userReview(id: Int!): UserReview
+  type Query {
+    allUserReviews: [UserReview]
+  }
+
+  type Mutation {
+    createUserReview(rating: Int!, comment: String!): UserReview
+  }
+
+  extend type Mutation {
+    updateUserReview(reviewId: Int!, rating: Int, comment: String): UserReview
+  }
+
+  extend type Mutation {
+    deleteUserReview(reviewId: Int!): Boolean
   }
 `;
 
 const SchemaDefinition = `
+  scalar Date
   schema {
-    query: RootQuery
+    query: Query
+    mutation: Mutation
   }
 `;
 
 export default makeExecutableSchema({
   typeDefs: [SchemaDefinition, RootQuery, ...UserReviewTypeDef],
-  resolvers: {},
+  resolvers: customDateScalarType
 });

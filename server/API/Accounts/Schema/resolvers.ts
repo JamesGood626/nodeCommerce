@@ -23,10 +23,10 @@ import {
 //   Query: object;
 //   Mutation: object;
 // }
-
 const resolvers = {
   Query: {
     allUsers: () => {
+      console.log("RUNNING ALL USERS");
       return [
                 { id: 1, email: 'jenny@gmail.com', password: 'pw' },
                 { id: 2, email: 'jimmy@gmail.com', password: 'pw' },
@@ -39,7 +39,6 @@ const resolvers = {
       return createUser(email, password);
     },
     loginUser: (parentValue, { email, password }, { req }): Promise<IUserModel | Error> => {
-      console.log('req should be passed in from here: ', req);
       return login(email, password, req);
     },
     updatePassword: (parentValue, { email, oldPassword, newPassword }): any => {
