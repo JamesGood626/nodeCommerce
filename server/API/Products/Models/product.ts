@@ -1,5 +1,5 @@
-import { Document, Schema, Model, model} from 'mongoose';
-import * as UserReview from '../../UserReviews/Models/userReview';
+import { Document, Schema, Model, model } from "mongoose";
+import * as UserReview from "../../UserReviews/Models/userReview";
 
 interface IProduct {
   price: number;
@@ -35,15 +35,18 @@ export const productSchema = new Schema({
     type: String,
     required: true
   },
-  // image: {
-  //   type: ,
-  //   unique: true,
-  //   required: true
-  // },
+  image: {
+    type: [Buffer],
+    unique: true,
+    required: true
+  }
   // reviews: {
   //   type: [ UserReview ],
   //   unique: true
   // }
 });
 
-export const Product: Model<IProductModel> = model<IProductModel>('Product', productSchema);
+export const Product: Model<IProductModel> = model<IProductModel>(
+  "Product",
+  productSchema
+);

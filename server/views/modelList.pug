@@ -3,6 +3,11 @@ html
     title= title
   body
     h1= `${modelKey}s`
+    form(action=`/admin/:${ modelKey }/mutate` method="POST")
     for obj in modelList
-      for name in obj.modelFieldValues
-        a(href=`/admin/${ modelKey.toLowerCase() }/detail/${ obj.id }`)= name
+      div.single-model-container
+      input(type="checkbox" name="delete" value=`${ obj.id }`)
+      input(type="checkbox" name="update" value=`${ obj.id }`)
+      for property in obj.modelFieldValues
+        h3= `${property[0]}`
+        a(href=`/admin/${ modelKey.toLowerCase() }/detail/${ obj.id }`)= `${property[1]}`

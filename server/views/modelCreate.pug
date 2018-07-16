@@ -2,7 +2,31 @@ html
   head
     title= title
   body
-    h1= title
-    form
-      input
-      button
+    h1= dBModelName
+    if multipartForm.length !== 0
+      h2= "Upload An Image"
+      form(action=`/admin/create/multi/${dBModelName}` class="multipart-form" method="POST" encType="multipart/form-data")
+        for obj in shemaObjects
+          div.input
+            span.label=`${obj.fieldName}`
+            input(type="text", name=`${obj.fieldName.toLowerCase()}`)
+        for obj in multipartForm
+          div.multipart-input
+            p='Upload multiple files with the file dialog or by dragging and dropping images onto the dashed region'
+            input(type="file" id="fileElem" name=`image-upload` multiple=true accept="image/*")
+            label(class="button" htmlFor="fileElem")='Select some files'
+        button(type="submit", value="add")
+    else
+      form(action=`/admin/create/${dBModelName}` method="post")
+        for obj in shemaObjects
+          if obj.fieldName !== 'image'
+            div.input
+              span.label=`${obj.fieldName}`
+              input(type="text", name=`${obj.fieldName.toLowerCase()}`)
+        button(type="submit", value="add")='Submit'
+
+<!-- Access fieldNames.required to determine if the input must have a value -->
+
+//- if (obj.fieldName === 'image' && obj.type.toLowerCase() === 'buffer') {
+
+//-         }

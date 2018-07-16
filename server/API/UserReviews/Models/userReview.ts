@@ -1,5 +1,5 @@
-import { Document, Schema, Model, model } from 'mongoose';
-import { User } from '../../Accounts/Models/user';
+import { Document, Schema, Model, model } from "mongoose";
+// import { User } from "../../Accounts/Models/user";
 
 interface IUserReview {
   user_id: object;
@@ -13,7 +13,7 @@ export interface IUserReviewModel extends IUserReview, Document {}
 export const userReviewSchema: Schema = new Schema({
   reviewer: {
     type: Schema.Types.ObjectId,
-    ref: 'User'
+    ref: "User"
   },
   rating: {
     type: Number,
@@ -23,13 +23,16 @@ export const userReviewSchema: Schema = new Schema({
     type: String,
     required: true
   },
-  date_time: {
+  last_edited: {
     type: Date,
     default: Date.now
-  },
-  edited_date: {
-    type: Date
   }
+  // edited_date: {
+  //   type: Date
+  // }
 });
 
-export const UserReview: Model<IUserReviewModel> = model<IUserReviewModel>('UserReview', userReviewSchema);
+export const UserReview: Model<IUserReviewModel> = model<IUserReviewModel>(
+  "UserReview",
+  userReviewSchema
+);

@@ -1,4 +1,5 @@
 import * as express from "express";
+import * as mongoose from "mongoose";
 import {
   initBodyParser,
   initRedisSessionStore,
@@ -48,3 +49,5 @@ initMongoMongooseConnection();
 initGraphQL(app);
 authRouter(app);
 initAdmin(adminConfig);
+
+// console.log("HERE'S MONGOOSE.MODELS: ", mongoose.models);
