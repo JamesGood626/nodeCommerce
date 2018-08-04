@@ -1,4 +1,4 @@
 /server/Config
 /server/node_modules
 /server/coverage.data
-/sever/coverage/*
+/server/coverage/*

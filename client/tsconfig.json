@@ -17,6 +17,12 @@
     "strictNullChecks": true,
     "suppressImplicitAnyIndexErrors": true,
     "noUnusedLocals": true,
+    // Using skipLibChecck due to this error that originates from
+    // react-apollo/types.d.ts
+    // This was a workaround mentioned in a github issue
+    // OP says react-apollo's tsconfig.json also has this option set. Issue #2104 in react-apollo
+    // Generic type 'FetchMoreQueryOptions<TVariables, K>' requires 2 type argument(s).
+    "skipLibCheck": true,
     "allowSyntheticDefaultImports": true
   },
   "exclude": [

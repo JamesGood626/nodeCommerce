@@ -84,3 +84,20 @@ export const updatePassword = (
     });
   });
 };
+
+export const adminUpdatePassword = (
+  email,
+  newPassword
+): Promise<string | IUserModel | ISuperUserModel> => {
+  return new Promise((resolve, reject) => {
+    User.findOne({ email }, (err, user: any) => {
+      if (err) {
+        return reject(err);
+      }
+      if (!user) {
+        return reject("User does not exist.");
+      }
+      return resolve(hashPassword(user, newPassword));
+    });
+  });
+};

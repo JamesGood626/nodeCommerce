@@ -33,6 +33,7 @@
   },
   "dependencies": {
     "apollo-server-express": "^1.3.6",
+    "aws-sdk": "^2.279.1",
     "axios": "^0.18.0",
     "bcrypt": "^2.0.1",
     "body-parser": "^1.18.2",
@@ -45,13 +46,15 @@
     "express-session": "^1.15.6",
     "graphql": "^0.13.2",
     "graphql-tools": "^3.0.2",
+    "jimp": "^0.2.28",
     "mongoose": "^5.0.18",
     "multer": "^1.3.1",
     "npm": "^6.1.0",
     "passport": "^0.4.0",
     "passport-local": "^1.0.0",
     "pug": "^2.0.3",
-    "redis": "^2.8.0"
+    "redis": "^2.8.0",
+    "uuid": "^3.3.2"
   },
   "devDependencies": {
     "@types/bcrypt": "^2.0.0",
@@ -70,6 +73,7 @@
     "@types/pug": "^2.0.4",
     "@types/redis": "^2.8.6",
     "@types/supertest": "^2.0.4",
+    "@types/uuid": "^3.4.3",
     "jest": "^23.2.0",
     "nodemon": "^1.17.4",
     "supertest": "^3.1.0",

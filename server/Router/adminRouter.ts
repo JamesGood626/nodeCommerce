@@ -1,8 +1,64 @@
 import { app } from "../app";
+import * as AWS from "aws-sdk";
+import * as uuidv4 from "uuid/v4";
 import { Document, Model, model, Schema } from "mongoose";
 import * as multer from "multer";
+import * as jimp from "jimp";
 import { User } from "../API/Accounts/Models/user";
-import { createUser } from "../Services/auth";
+import { createUser, adminUpdatePassword } from "../Services/auth";
+import {
+  BUCKET_NAME,
+  IAM_USER_KEY,
+  IAM_USER_SECRET
+} from "../Config/aws-config";
+
+// TODO
+// Image Upload
+// Testing
+// Refactor
+
+const uploadToS3 = (photoBuffer, photoName) => {
+  const s3 = new AWS.S3({
+    accessKeyId: IAM_USER_KEY,
+    secretAccessKey: IAM_USER_SECRET
+  });
+  s3.createBucket(() => {
+    const params = {
+      Bucket: BUCKET_NAME,
+      Key: `product-images/${photoName}`,
+      Body: photoBuffer
+    };
+    s3.upload(params, (err, data) => {
+      if (err) {
+        console.log("Error in s3Bucket.upload callback");
+        console.log(err);
+      }
+      console.log("Success");
+      console.log(data);
+    });
+  });
+};
+
+const retrieveFromS3 = photoRoute => {
+  const s3 = new AWS.S3({
+    accessKeyId: IAM_USER_KEY,
+    secretAccessKey: IAM_USER_SECRET
+  });
+  s3.createBucket(() => {
+    const params = {
+      Bucket: BUCKET_NAME,
+      Key: photoRoute
+    };
+    s3.getObject(params, (err, data) => {
+      if (err) {
+        console.log("Error in s3Bucket.getObject callback");
+        console.log(err);
+      }
+      console.log("Success");
+      console.log(data);
+    });
+  });
+};
 
 const upload = multer({
   storage: multer.memoryStorage(),
@@ -15,15 +71,6 @@ const upload = multer({
     }
   }
 });
-
-// app.get('/admin', (req, res) => {
-//   console.log('This is the User Model: ', User);
-//   res.render('index', { title: 'Admin Panel', message: 'Welcome to the Thunderdome!' });
-// });
-
-// app.get('/admin/home', (req, res) => {
-//   res.render('adminHome', { title: 'Admin Panel', message: 'Welcome to the Admin Home!' });
-// });
 
 // Built to match either:
 // 'function Number() { [native code] }'
@@ -93,13 +140,35 @@ class AdminSite {
     console.log(this.registry);
   };
 
+  // NOT GOING TO WORRY ABOUT RENDERING IMAGE TO THE PAGE RIGHT NOW.
+  // CAN FOCUS ON THAT AFTER DOING A MAJOR REFACTOR AND RAISING TEST COVERAGE.
   public createRoutes = () => {
     app.get("/testing", async (req, res) => {
-      const userList = await User.find({}).then(users => users);
-      console.log("typeof UserList: ", typeof userList);
-      userList.map(user => {
-        console.log("users email: ", user.email);
-      });
+      const imageRoute: string = await this.getModelClass("Product")
+        .findOne({ name: "Brown Belt" })
+        .then(result => `product-images/${result.image}`);
+      console.log("Here be the result! ", imageRoute);
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // SUCESSFULLY RETRIEVES THE IMAGE :O
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      // !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+      //        Here be the result!  product-images/f0bdc8f5-f335-4365-a616-4e5953286234.jpeg
+      // [0] Success
+      // [0] { AcceptRanges: 'bytes',
+      // [0]   LastModified: 2018-07-23T04:28:04.000Z,
+      // [0]   ContentLength: 461186,
+      // [0]   ETag: '"e5212132390bf66e0eb322f9d59dee5e"',
+      // [0]   ContentType: 'application/octet-stream',
+      // [0]   ServerSideEncryption: 'AES256',
+      // [0]   Metadata: {},
+      // [0]   Body: <Buffer ff d8 ff e0 00 10 4a 46 49 46 00 01 01 00 00 01 00 01 00 00 ff db 00 84 00 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 01 ... > }
+      retrieveFromS3(imageRoute);
+      // const userList = await User.find({}).then(users => users);
+      // console.log("typeof UserList: ", typeof userList);
+      // userList.map(user => {
+      //   console.log("users email: ", user.email);
+      // });
     });
 
     const modelNames = Object.getOwnPropertyNames(this.registry);
@@ -114,7 +183,10 @@ class AdminSite {
     this.generateDetailViews(modelNames);
     this.generateCreateModelViews(modelNames);
     this.createModelPostView();
-    this.createModelMultiPostView();
+    this.createModelMultiPostView(this.resize);
+    this.updateModelView();
+    this.updateModelPostView();
+    this.deleteModelPostView();
   };
 
   // Can make an interface for the return type.
@@ -158,43 +230,58 @@ class AdminSite {
 
   // Need to add the option to delete or update in the list view
   public generateListViews = (modelNames: string[]): void => {
-    modelNames.map((key: string) => {
-      return app.get(`/admin/${key.toLowerCase()}/list`, async (req, res) => {
-        const documents: Document[] = await this.getModelClass(key)
-          .find({})
-          .then((results: Document[]) => results);
-        const models: object[] = this.decideMapFunc(key, documents);
-        console.log("HERE ARE THE MODELS AFTER DECIDE MAP FUNC!!: ", models);
-        res.render("modelList", {
-          title: "Admin Panel",
-          modelList: models,
-          modelKey: key
-        });
-      });
+    modelNames.map((modelName: string) => {
+      return app.get(
+        `/admin/${modelName.toLowerCase()}/list`,
+        async (req, res) => {
+          const documents: Document[] = await this.getModelClass(modelName)
+            .find({})
+            .then((results: Document[]) => results);
+          const models: object[] = this.decideMapFunc(modelName, documents);
+          // console.log(
+          //   "HERE ARE THE MODEL FIELD VALUES AFTER DECIDE MAP FUNC!!: ",
+          //   (models[0] as any).modelFieldValues
+          // );
+          res.render("modelList", {
+            title: "Admin Panel",
+            modelList: models,
+            modelName,
+            multipartForm: this.registry[modelName].filter(
+              item => item.fieldName === "image"
+            )
+          });
+        }
+      );
     });
   };
 
   public generateDetailViews = (modelNames: string[]): void => {
-    modelNames.map((key: string) => {
+    modelNames.map((modelName: string) => {
       return app.get(
-        `/admin/${key.toLowerCase()}/detail/:model`,
+        `/admin/${modelName.toLowerCase()}/detail/:model`,
         async (req, res) => {
           const modelId = req.params.model;
-          const document: Document = await this.getModelClass(key)
+          const document: Document = await this.getModelClass(modelName)
             .findById({ _id: modelId })
             .then(result => result);
           const documentFields =
-            key === "User"
-              ? this.filterUserPassword(key, document)
-              : this.mapWithoutFiltering(key, document);
+            modelName === "User"
+              ? this.filterUserPassword(modelName, document)
+              : this.mapWithoutFiltering(modelName, document);
           // console.log("HERE ARE THE documentFields: ", documentFields);
           res.render("modelDetail", {
             title: "Admin Panel",
-            modelFieldNames: this.registry[key].filter(
+            modelId,
+            modelName,
+            userEmail: this.registry[modelName].filter(
+              item => item.fieldName === "email"
+            ),
+            modelFieldNames: this.registry[modelName].filter(
               item => item.fieldName !== "password"
             ),
-            documentModel: documentFields.modelFieldValues.filter(
-              val => typeof val !== "undefined"
+            modelFieldValues: documentFields.modelFieldValues.filter(
+              val =>
+                typeof val[0] !== "undefined" && typeof val[1] !== "undefined"
             )
           });
         }
@@ -205,14 +292,14 @@ class AdminSite {
   public generateCreateModelViews = (modelNames: string[]): void => {
     // This will require a decent amount of planning to account
     // for the different field types that are required.
-    modelNames.map((key: string) => {
-      return app.get(`/admin/${key.toLowerCase()}/create`, (req, res) => {
+    modelNames.map((modelName: string) => {
+      return app.get(`/admin/${modelName.toLowerCase()}/create`, (req, res) => {
         res.render("modelCreate", {
           title: "Admin Model Create",
-          dBModelName: key,
-          shemaObjects: this.registry[key].map(item => item),
-          multipartForm: this.registry[key].filter(
-            item => item.fieldName === "image" && item.type === "Buffer"
+          modelName,
+          schemaObjects: this.registry[modelName].map(item => item),
+          multipartForm: this.registry[modelName].filter(
+            item => item.fieldName === "image"
           )
         });
       });
@@ -232,40 +319,160 @@ class AdminSite {
       } else {
         const modelClass = this.getModelClass(modelName);
         const modelInstance = new modelClass(req.body);
-        console.log("THE MODEL INSTANCE: ", req.body);
         const modelSaved = await modelInstance.save();
-        console.log("THE MODEL SAVED RESULT: ", modelSaved);
         if (modelSaved) {
           res.status(200).redirect(`/admin/${modelName.toLowerCase()}/create`);
         } // Handle failed save.
       }
-      // console.log("THE REQUEST BODY: ", req.body);
-      // console.log("SUCCESS creating: ", modelClass);
     });
   };
 
-  public createModelMultiPostView = (): void => {
-    const cpUpload = upload.array("image-upload", 10);
-    app.post(`/admin/create/multi/:modelName`, cpUpload, async (req, res) => {
-      const modelName = req.params.modelName;
-      const bufferArr = (req.files as any).map(photoObj => {
-        return photoObj.buffer;
-      });
-      // console.log("THE IMAGES! ", bufferArr);
-      // console.log("THE REST OF THE FORM VALUES: ", req.body);
+  public resize = async (req, res, next) => {
+    if (!req.files) {
+      next();
+    }
+    // const fileExtensionsArr: string[] = [];
+    const fileExtensionsArr = req.files.map(file => {
+      const mimeType = file.mimetype.split("/")[1];
+      const fileExtensionToStoreInDB = `${uuidv4()}.${mimeType}`;
+      const photoBuffer = this.jimpResize(file, fileExtensionToStoreInDB);
+      console.log("The file extension single: ", fileExtensionToStoreInDB);
+      // fileExtensionsArr.push(fileExtensionToStoreInDB);
+      return fileExtensionToStoreInDB;
+    });
+    req.body.image = fileExtensionsArr;
+    next();
+  };
 
-      // Yeah... This didn't work. Will need to look into
-      // Saving the filepath in the db, and using that as a reference.
-      // The plus side to that is the option to do image resizing.
-      req.body.image = bufferArr;
-      const modelClass = this.getModelClass(modelName);
-      const modelInstance = new modelClass(req.body);
-      console.log("THE MODEL INSTANCE: ", req.body);
-      const modelSaved = await modelInstance.save();
-      console.log("THE MODEL SAVED RESULT: ", modelSaved);
-      if (modelSaved) {
-        res.status(200).redirect(`/admin/${modelName.toLowerCase()}/create`);
+  public jimpResize = async (file, fileExt) => {
+    const photo = await jimp.read(file.buffer);
+    await photo.resize(800, jimp.AUTO);
+    // Upload photoBuffer to S3
+    const photoBuffer = await photo.getBuffer(
+      photo.getMIME(),
+      (err, buffer) => {
+        if (err) {
+          console.log("Error getting photo buffer: ", err);
+        }
+        return buffer;
       }
+    );
+    uploadToS3(photoBuffer, fileExt);
+  };
+
+  // public resize = async (req, res, next) => {
+  //   if (!req.files) {
+  //     next();
+  //   }
+  //   const mimeType = req.files[0].mimetype.split("/")[1];
+  //   req.body.image = `${uuidv4()}.${mimeType}`;
+  //   const photo = await jimp.read(req.files[0].buffer);
+  //   await photo.resize(800, jimp.AUTO);
+  //   // Upload photoBuffer to S3
+  //   const photoBuffer = await photo.getBuffer(
+  //     photo.getMIME(),
+  //     (err, buffer) => {
+  //       if (err) {
+  //         console.log("Error getting photo buffer: ", err);
+  //       }
+  //       return buffer;
+  //     }
+  //   );
+  //   uploadToS3(photoBuffer, req.body.image);
+  //   next();
+  // };
+
+  public createModelMultiPostView = (resize): void => {
+    const cpUpload = upload.array("image-upload", 10);
+    app.post(
+      `/admin/create/multi/:modelName`,
+      cpUpload,
+      resize,
+      async (req, res) => {
+        console.log("In create model multi post view: ", req.body.image);
+        const modelName: string = req.params.modelName;
+        const reqBodyKeys: string[] = Object.getOwnPropertyNames(req.body);
+        const objWithoutImageArr: object = reqBodyKeys.reduce((acc, curr) => {
+          if (curr !== "image") {
+            acc[curr] = req.body[curr];
+          }
+          return acc;
+        }, {});
+        console.log(
+          "making sure I reduced this correctly: ",
+          objWithoutImageArr
+        );
+        const modelClass = this.getModelClass(modelName);
+        const modelInstance = new modelClass(objWithoutImageArr);
+        console.log("THE MODEL INSTANCE: ", modelInstance);
+        if (req.body.image !== "undefined") {
+          req.body.image.map(imageExt => {
+            modelInstance.image.push(imageExt);
+          });
+        }
+        const modelSaved = await modelInstance.save();
+        console.log("THE MODEL SAVED RESULT: ", modelSaved);
+        if (modelSaved) {
+          res.status(200).redirect(`/admin/${modelName.toLowerCase()}/create`);
+        }
+      }
+    );
+  };
+
+  public updateModelView = (): void => {
+    app.get(`/admin/update/:modelName/:modelId`, async (req, res) => {
+      const modelName = req.params.modelName;
+      const modelId = req.params.modelId;
+      res.render("modelUpdate", {
+        title: "Admin Panel",
+        modelId,
+        modelName,
+        schemaObjects: this.registry[modelName].map(item => item),
+        multipartForm: this.registry[modelName].filter(
+          item => item.fieldName === "image" && item.type === "Buffer"
+        )
+      });
+    });
+  };
+
+  public updateModelPostView = (): void => {
+    app.post(`/admin/update/:modelName/:modelId`, async (req, res) => {
+      // Need to handle updating user
+      const modelId = req.params.modelId;
+      const modelName = req.params.modelName;
+      if (modelName === "User") {
+        const resultOfUpdate = await adminUpdatePassword(
+          modelId,
+          req.body.password
+        );
+        if (!resultOfUpdate) {
+          res.sendStatus(401);
+        }
+        res.sendStatus(200);
+      } else {
+        const modelClass = this.getModelClass(modelName);
+        const values = req.body;
+        const updateResult = await modelClass.findOneAndUpdate(
+          { _id: modelId },
+          req.body
+        );
+        if (updateResult) {
+          res.sendStatus(200);
+        }
+        res.sendStatus(401);
+      }
+    });
+  };
+
+  public deleteModelPostView = (): void => {
+    app.post(`/admin/delete/:modelName`, async (req, res) => {
+      const documentsToDelete = req.body.delete;
+      const modelName = req.params.modelName;
+      const modelClass = this.getModelClass(modelName);
+      documentsToDelete.map(async documentId => {
+        const result = await modelClass.findOneAndRemove({ _id: documentId });
+      });
+      res.sendStatus(200);
     });
   };
 

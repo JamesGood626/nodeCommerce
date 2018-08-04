@@ -23,15 +23,6 @@ import {
 
 export const app = express();
 
-// You can use this to access the properties.
-// I think this invalidates Passing User to the config.
-// But it may be necessary for admin to perform CRUD?
-const keys = Object.getOwnPropertyNames(userSchema.obj);
-keys.map(key => {
-  console.log("THESE ARE THE USER SCHEMA KEYS! ", key);
-});
-console.log("AND END");
-
 const adminConfig = [
   ["User", userSchema],
   ["BillingInfo", billingInfoSchema],
@@ -49,5 +40,3 @@ initMongoMongooseConnection();
 initGraphQL(app);
 authRouter(app);
 initAdmin(adminConfig);
-
-// console.log("HERE'S MONGOOSE.MODELS: ", mongoose.models);

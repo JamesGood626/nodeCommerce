@@ -2,7 +2,12 @@ html
   head
     title= title
   body
+    if userEmail.length !== 0 && userEmail[0].fieldName === 'email'
+      for value in modelFieldValues
+        a(href=`/admin/update/${ modelName }/${ value[1] }`)= 'Update'
+    else
+      a(href=`/admin/update/${ modelName }/${ modelId }`)= 'Update'
     for name in modelFieldNames
       div= name.field
-        for property in documentModel
-          div= property
+    for property in modelFieldValues
+      div= property

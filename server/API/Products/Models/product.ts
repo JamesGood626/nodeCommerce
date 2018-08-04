@@ -13,6 +13,22 @@ interface IProduct {
 export interface IProductModel extends IProduct, Document {}
 
 export const productSchema = new Schema({
+  main_category: {
+    type: String,
+    required: true
+  },
+  sub_category: {
+    type: String,
+    required: true
+  },
+  name: {
+    type: String,
+    required: true
+  },
+  description: {
+    type: String,
+    required: true
+  },
   price: {
     type: Number,
     required: true
@@ -31,12 +47,8 @@ export const productSchema = new Schema({
     // I'll hold off on making it required for now.
     // required: true
   },
-  description: {
-    type: String,
-    required: true
-  },
   image: {
-    type: [Buffer],
+    type: [String],
     unique: true,
     required: true
   }

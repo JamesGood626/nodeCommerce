@@ -2,10 +2,10 @@ html
   head
     title= title
   body
-    h1= modelName
+    h1= `Update ${modelName}`
     if multipartForm.length !== 0
       h2= "Upload An Image"
-      form(action=`/admin/create/multi/${modelName}` class="multipart-form" method="POST" encType="multipart/form-data")
+      form(action=`/admin/update/multi/${modelName}/${modelId}` class="multipart-form" method="POST" encType="multipart/form-data")
         for obj in schemaObjects
           div.input
             span.label=`${obj.fieldName}`
@@ -17,18 +17,12 @@ html
             label(class="button" htmlFor="fileElem")='Select some files'
         button(type="submit", value="add")
     else
-      form(action=`/admin/create/${modelName}` method="post")
+      form(action=`/admin/update/${modelName}/${modelId}` method="post")
         for obj in schemaObjects
-          if obj.fieldName !== 'image'
+          if obj.fieldName !== 'email'
             div.input
               span.label=`${obj.fieldName}`
               input(type="text", name=`${obj.fieldName.toLowerCase()}`)
         button(type="submit", value="add")='Submit'
 
-<!-- Access fieldNames.required to determine if the input must have a value -->
-
-//- if (obj.fieldName === 'image' && obj.type.toLowerCase() === 'buffer') {
-
-//-         }
-
-<!-- REMOVE COMMAS FROM SUBMITTED NUMBERS -->
+// Much fix required.
