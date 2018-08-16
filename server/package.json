@@ -35,7 +35,7 @@
     "apollo-server-express": "^2.0.0",
     "aws-sdk": "^2.279.1",
     "axios": "^0.18.0",
-    "bcrypt": "^2.0.1",
+    "bcrypt": "^3.0.0",
     "body-parser": "^1.18.2",
     "concurrently": "^3.5.1",
     "connect-flash": "^0.1.1",
