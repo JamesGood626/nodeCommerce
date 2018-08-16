@@ -1,15 +1,19 @@
 import { Document, Schema, Model, model } from "mongoose";
-// import { User } from "../../Accounts/Models/user";
+import { IUserModel } from "../../Accounts/Models/user";
+import { IProductModel } from "../../Products/Models/product";
 
 interface IUserReview {
-  user_id: object;
+  reviewer: IUserModel;
   rating: number;
   comment: string;
-  date_time: Date;
+  review_date: Date;
+  product_reviewed: IProductModel;
 }
 
+// User has a list of UserReviews referenced
+// Product has a list of UserReviews referenced
 export interface IUserReviewModel extends IUserReview, Document {}
-
+// How to build in a range of 1-5 into the rating Number? I guess a validator.
 export const userReviewSchema: Schema = new Schema({
   reviewer: {
     type: Schema.Types.ObjectId,
@@ -23,13 +27,17 @@ export const userReviewSchema: Schema = new Schema({
     type: String,
     required: true
   },
-  last_edited: {
+  review_date: {
     type: Date,
     default: Date.now
+  },
+  last_edited: {
+    type: Date
+  },
+  product_reviewed: {
+    type: Schema.Types.ObjectId,
+    ref: "Product"
   }
-  // edited_date: {
-  //   type: Date
-  // }
 });
 
 export const UserReview: Model<IUserReviewModel> = model<IUserReviewModel>(

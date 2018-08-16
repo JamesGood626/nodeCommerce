@@ -1,4 +1,5 @@
+*.DS_Store
 /server/Config
 /server/node_modules
 /server/coverage.data
-/server/coverage/*
+/server/coverage/*.DS_Store

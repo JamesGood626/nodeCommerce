@@ -10,7 +10,8 @@
     "quotemark": false,
     "trailing-comma": false,
     "arrow-parens": false,
-    "semicolon": false
+    "semicolon": false,
+    "no-shadowed-variable": false
   },
   "linterOptions": {
     "exclude": ["config/**/*.js", "node_modules/**/*.ts"]

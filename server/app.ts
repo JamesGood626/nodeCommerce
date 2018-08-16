@@ -10,11 +10,8 @@ import {
 import { authRouter } from "./Router/authRouter";
 import { initAdmin } from "./Utils/initAdmin";
 import { User, userSchema } from "./API/Accounts/Models/user";
-import {
-  BillingInfo,
-  billingInfoSchema
-} from "./API/BillingInfo/Models/billingInfo";
-import { Cart, cartSchema } from "./API/Cart/Models/cart";
+import { billingInfoSchema } from "./API/BillingInfo/Models/billingInfo";
+import { cartSchema } from "./API/Cart/Models/cart";
 import { Product, productSchema } from "./API/Products/Models/product";
 import {
   UserReview,
@@ -37,6 +34,6 @@ initBodyParser(app);
 initRedisSessionStore(app);
 initPassport(app);
 initMongoMongooseConnection();
-initGraphQL(app);
+export const graphQLServer = initGraphQL(app);
 authRouter(app);
-initAdmin(adminConfig);
+// initAdmin(adminConfig);

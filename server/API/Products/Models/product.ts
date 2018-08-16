@@ -1,27 +1,21 @@
 import { Document, Schema, Model, model } from "mongoose";
-import * as UserReview from "../../UserReviews/Models/userReview";
+// import { UserReview } from "../../UserReviews/Models/userReview";
 
-interface IProduct {
-  price: number;
-  sale_price: number;
-  sale_price_start: Date;
-  sale_price_expiry: Date;
-  shipping_time: string;
+export interface IProduct {
+  product_title: string;
   description: string;
+  price: number;
+  sale_price?: number;
+  sale_price_start?: Date;
+  sale_price_expiry?: Date;
+  shipping_time?: string;
+  images: [string];
 }
 
 export interface IProductModel extends IProduct, Document {}
 
 export const productSchema = new Schema({
-  main_category: {
-    type: String,
-    required: true
-  },
-  sub_category: {
-    type: String,
-    required: true
-  },
-  name: {
+  product_title: {
     type: String,
     required: true
   },
@@ -44,18 +38,18 @@ export const productSchema = new Schema({
   },
   shipping_time: {
     type: String
-    // I'll hold off on making it required for now.
-    // required: true
   },
-  image: {
+  images: {
     type: [String],
     unique: true,
     required: true
   }
-  // reviews: {
-  //   type: [ UserReview ],
-  //   unique: true
-  // }
+  // user_reviews: [
+  //   {
+  //     type: Schema.Types.ObjectId,
+  //     ref: "UserReview"
+  //   }
+  // ]
 });
 
 export const Product: Model<IProductModel> = model<IProductModel>(

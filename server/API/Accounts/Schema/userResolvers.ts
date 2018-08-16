@@ -1,9 +1,6 @@
-import { IUserModel } from '../Models/user';
-import {
-  createUser,
-  login,
-  updatePassword
-} from '../../../Services/auth';
+import { IUserModel } from "../Models/user";
+import { createUser, login, updatePassword } from "../../../Services/auth";
+import { getAllUsers } from "../Services";
 
 // interface IQuery {
 //   allUsers: () => Array<{id: number; email: string; password: string; }>;
@@ -23,22 +20,21 @@ import {
 //   Query: object;
 //   Mutation: object;
 // }
-const resolvers = {
+export const userResolvers = {
   Query: {
-    allUsers: () => {
-      console.log("RUNNING ALL USERS");
-      return [
-                { id: 1, email: 'jenny@gmail.com', password: 'pw' },
-                { id: 2, email: 'jimmy@gmail.com', password: 'pw' },
-                { id: 3, email: 'jean@gmail.com', password: 'pw' }
-             ];
+    allUsers: (_, ___, { req }) => {
+      return getAllUsers();
     }
   },
   Mutation: {
     createUser: (parentValue, { email, password }): any => {
       return createUser(email, password);
     },
-    loginUser: (parentValue, { email, password }, { req }): Promise<IUserModel | Error> => {
+    loginUser: (
+      parentValue,
+      { email, password },
+      { req }
+    ): Promise<IUserModel | Error> => {
       return login(email, password, req);
     },
     updatePassword: (parentValue, { email, oldPassword, newPassword }): any => {
@@ -46,5 +42,3 @@ const resolvers = {
     }
   }
 };
-
-export default resolvers;

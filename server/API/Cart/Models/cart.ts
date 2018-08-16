@@ -1,23 +1,24 @@
-import { Document, Schema, Model, model} from 'mongoose';
-import { Product, IProductModel } from '../../Products/Models/product';
+import { Document, Schema, Model, model } from "mongoose";
+import { Product, IProductModel } from "../../Products/Models/product";
 
-interface ICart {
+export interface ICart {
   total_price_amount: string;
   products: IProductModel[];
   discount: number;
   total_price_with_discount: number;
 }
 
-export interface ICartModel extends ICart, Document {}
-
 export const cartSchema = new Schema({
   total_price_amount: {
     type: Number,
     required: true
   },
-  // products: {
-  //   type: [ Product ]
-  // },
+  products: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Product"
+    }
+  ],
   discount: {
     type: Number
   },
@@ -25,5 +26,3 @@ export const cartSchema = new Schema({
     type: Number
   }
 });
-
-export const Cart: Model<ICartModel> = model<ICartModel>('Cart', cartSchema);

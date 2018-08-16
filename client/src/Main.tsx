@@ -1,22 +1,24 @@
-import * as React from 'react';
-import { Route, Switch } from 'react-router-dom';
+import * as React from "react";
+import { BrowserRouter, Route, Switch } from "react-router-dom";
 // import { Query } from 'react-apollo'
 // import gql from "graphql-tag"
 
-import home from './AppPages/home';
-import Login from './AppPages/Login';
-import Register from './AppPages/Register';
+import home from "./AppPages/home";
+import Login from "./AppPages/Login";
+import Register from "./AppPages/Register";
 
-import './App.css';
+import "./App.css";
 
 class Main extends React.Component {
   public render() {
     return (
-      <Switch>
-        <Route exact={ true } path='/' component={ home } />
-        <Route path='/register' component={ Register } />
-        <Route path='/login' component={ Login } />
-      </Switch>
+      <BrowserRouter>
+        <Switch>
+          <Route exact={true} path="/" component={home} />
+          <Route path="/register" component={Register} />
+          <Route path="/login" component={Login} />
+        </Switch>
+      </BrowserRouter>
     );
   }
 }
@@ -37,7 +39,6 @@ export default Main;
 //           return `Hello ${ data.hello }`
 //         }}
 //       </Query> */}
-
 
 // state = {
 //     username: '',
@@ -69,7 +70,7 @@ export default Main;
 //         password: updatedInput
 //       }))
 //     }
-    
+
 //   }
 
 //   render() {

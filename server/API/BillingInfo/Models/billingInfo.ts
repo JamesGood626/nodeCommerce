@@ -1,30 +1,31 @@
-import { Document, Schema, Model, model} from 'mongoose';
+import { Schema } from "mongoose";
 
-interface IBillingInfo {
+export interface IBillingInfo {
   street_address: string;
-  city: string;
-  zip: string;
   apartment?: string;
+  city: string;
+  state?: string;
+  zip?: string;
+  country: string;
 }
-
-export interface IBillingInfoModel extends IBillingInfo, Document {}
 
 export const billingInfoSchema = new Schema({
   street_address: {
-    type: String,
-    required: true
-  },
-  city: {
-    type: String,
-    required: true
-  },
-  zip: {
-    type: String,
-    required: true
+    type: String
   },
   apartment: {
     type: String
+  },
+  city: {
+    type: String
+  },
+  state: {
+    type: String
+  },
+  zip: {
+    type: String
+  },
+  country: {
+    type: String
   }
 });
-
-export const BillingInfo: Model<IBillingInfoModel> = model<IBillingInfoModel>('BillingInfo', billingInfoSchema);

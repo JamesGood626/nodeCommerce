@@ -1,6 +1,6 @@
-import * as request from "supertest";
-import { app } from ",,/../../app";
-import { createUser } from "../../../../Services/auth";
+// import * as request from "supertest";
+// import { app } from "../../../../app";
+// import { createUser } from "../../../../Services/auth";
 // import { User } from '../../API/Accounts/Models/user';
 
 test("it adds 1+1", () => {

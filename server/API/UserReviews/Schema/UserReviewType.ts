@@ -1,14 +1,14 @@
-import UserTypeDef from '../../Accounts/Schema/userType';
+import { gql } from "apollo-server-express";
 
-const UserReviewTypeDef = `
+export const userReviewTypeDef = `
+  scalar Date
   type UserReview {
-    id: Int!
+    id: String!
     reviewer: User!
     rating: Int!
     comment: String!
     date: Date
     edited: Date
+    product_reviewed: Product!
   }
 `;
-
-export default [ UserReviewTypeDef, UserTypeDef ];

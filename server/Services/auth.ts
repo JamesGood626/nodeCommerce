@@ -42,7 +42,7 @@ export const createSuperUser = (
 };
 
 export const login = (email, password, req): Promise<IUserModel | Error> => {
-  console.log("Login is running.");
+  // console.log("Login is running.");
   return new Promise((resolve, reject) => {
     passport.authenticate("local", (err, user, info, status) => {
       if (err) {
@@ -51,13 +51,13 @@ export const login = (email, password, req): Promise<IUserModel | Error> => {
       if (!user) {
         return reject("User does not exist.");
       }
-      console.log("this is the req.session: ", req.session);
+      // console.log("this is the req.session: ", req.session);
       req.session.save(error => {
         if (error) {
           return reject(error);
         }
       });
-      console.log("logging in user: ", user);
+      // console.log("logging in user: ", user);
       req.login(user, () => resolve(user));
     })({ body: { email, password } });
   });

@@ -1,19 +1,9 @@
-import gql from "graphql-tag";
 import * as React from "react";
-// import axios from 'axios'
 import { Mutation } from "react-apollo";
-
+import { CREATE_USER } from "../../GraphQL/remoteMutations";
 import "../../App.css";
 
 /* tslint:disable:no-console */
-
-const CREATE_USER = gql`
-  mutation createUser($email: String!, $password: String!) {
-    createUser(email: $email, password: $password) {
-      email
-    }
-  }
-`;
 
 class Register extends React.Component {
   public state = {
@@ -22,7 +12,9 @@ class Register extends React.Component {
   };
   // Will need to create a separate component for the form so that I may
   // pass createUser function as a prop and bind the handleSubmit function
-  // in the form component's constructor. Because binding in render is bad.s
+  // in the form component's constructor. Because binding in render is bad.
+
+  // Coming back to this a month later.. Perfect use for compound components?
   public render() {
     return (
       <div>

@@ -1,24 +1,112 @@
 import * as React from "react";
-import { BrowserRouter, Route, Switch } from "react-router-dom";
-// import { Query } from 'react-apollo'
-// import gql from "graphql-tag"
-
-// import home from './AppPages/home';
-// import Login from './AppPages/Login';
-// import Register from './AppPages/Register';
-import Admin from "./Admin";
-import Main from "./Admin";
+import { ApolloClient } from "apollo-client";
+import * as ApolloLink from "apollo-link";
+import { ApolloCache } from "apollo-cache";
+import { InMemoryCache, NormalizedCacheObject } from "apollo-cache-inmemory";
+import { HttpLink } from "apollo-link-http";
+import { withClientState } from "apollo-link-state";
+import { ApolloProvider } from "react-apollo";
+import { gql } from "apollo-boost";
+import Main from "./Main";
+import "./index.css";
 import "./App.css";
+
+interface ILocalState {
+  registrationFormValues: IRegistrationFormValues;
+  loginCredentials: ILoginCredentials;
+}
+
+interface IRegistrationInput {
+  registrationInput: {
+    email: string;
+    password: string;
+  };
+}
+
+interface ICacheContext {
+  cache: ApolloCache<NormalizedCacheObject>;
+}
+
+interface IRegistrationFormValues {
+  __typename: string;
+  email: string;
+  password: string;
+}
+
+interface ILoginCredentials {
+  __typename: string;
+  email: string;
+  password: string;
+}
+
+const cache = new InMemoryCache();
+const nodeCommerceGraphQLAPI = new HttpLink({
+  uri: "http://localhost:3000/graphql"
+});
+
+const defaultState = {
+  registrationFormValues: {
+    __typename: "RegistrationFormValues",
+    email: "",
+    password: ""
+  },
+  loginCredentials: {
+    __typename: "LoginCredentials",
+    email: "",
+    password: ""
+  }
+};
+
+const stateLink = withClientState({
+  cache,
+  defaults: defaultState,
+  resolvers: {
+    Mutation: {
+      updateRegistrationFormValues: (
+        _: any,
+        { registrationInput: { email, password } }: IRegistrationInput,
+        { cache }: ICacheContext
+      ) => {
+        const query = gql`
+          query GetRegistrationFormValues {
+            registrationFormValues @client {
+              __typename
+              email
+              password
+            }
+          }
+        `;
+        const previousState: ILocalState | null = cache.readQuery({
+          query
+        });
+        let data;
+        if (previousState !== null) {
+          data = {
+            ...previousState,
+            registrationFormValues: {
+              ...previousState.registrationFormValues,
+              [email]: email,
+              [password]: password
+            }
+          };
+        }
+        cache.writeData({ id: query, data });
+      }
+    }
+  }
+});
+
+const client = new ApolloClient({
+  cache,
+  link: ApolloLink.from([stateLink, nodeCommerceGraphQLAPI])
+});
 
 class App extends React.Component {
   public render() {
     return (
-      <BrowserRouter>
-        <Switch>
-          <Route exact={true} path="/admin" component={Admin} />
-          <Route path="/*" component={Main} />
-        </Switch>
-      </BrowserRouter>
+      <ApolloProvider client={client}>
+        <Main />
+      </ApolloProvider>
     );
   }
 }
