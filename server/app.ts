@@ -28,8 +28,8 @@ const adminConfig = [
   ["UserReview", userReviewSchema]
 ];
 
-app.set("view engine", "pug");
-app.set("views", "./views");
+// app.set("view engine", "pug");
+// app.set("views", "./views");
 initBodyParser(app);
 initRedisSessionStore(app);
 initPassport(app);

@@ -9,4 +9,23 @@ export const billingInfoTypeDef = gql`
     zip: String
     country: String!
   }
+
+  input BillingInfoInput {
+    street_address: String!
+    apartment: String
+    city: String!
+    state: String
+    zip: String
+    country: String!
+  }
+
+  extend type Query {
+    allBillingInfo: [BillingInfo]
+  }
+
+  extend type Mutation {
+    createBillingInfo(input: BillingInfoInput): BillingInfo
+    editBillingInfo(input: BillingInfoInput): BillingInfo
+    deleteBillingInfo: User
+  }
 `;

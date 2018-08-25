@@ -16,35 +16,34 @@ export const productResolvers = {
     createProduct: async (
       _,
       {
-        input: {
-          product_title,
-          description,
-          price,
-          sale_price,
-          sale_price_start,
-          sale_price_expiry,
-          shipping_time,
-          images
-        }
+        input: { product_title, description, price, sale_price_start, images }
       },
       { req }
     ) => {
+      console.log("createProduct Mutation called.");
       return await createProduct(
-        {
-          product_title,
-          description,
-          price,
-          sale_price,
-          sale_price_start,
-          sale_price_expiry,
-          shipping_time,
-          images
-        },
+        { product_title, description, price, sale_price_start, images },
         req.user
       );
     }
   }
 };
+
+// description,
+// price,
+// sale_price,
+// sale_price_start,
+// sale_price_expiry,
+// shipping_time,
+// images
+
+// description,
+// price,
+// sale_price,
+// sale_price_start,
+// sale_price_expiry,
+// shipping_time,
+// images
 
 // editBillingInfo: (
 //   _,

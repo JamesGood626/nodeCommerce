@@ -5,7 +5,7 @@ import { createUser } from "../../../Services/auth";
 import { dropUserCollection } from "../../../Services/tests/test-helpers";
 // import { User } from "../../API/Accounts/Models/user";
 
-describe.only("Test billing info CRUD Operations via GraphQL queries and mutations", () => {
+describe("Test billing info CRUD Operations via GraphQL queries and mutations", () => {
   let createdRequest;
   let server;
 

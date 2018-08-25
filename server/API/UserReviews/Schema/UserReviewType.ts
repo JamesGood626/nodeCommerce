@@ -11,4 +11,12 @@ export const userReviewTypeDef = `
     edited: Date
     product_reviewed: Product!
   }
+
+  extend type Query {
+    
+  }
+
+  extend type Mutation {
+    
+  }
 `;

@@ -25,6 +25,7 @@ export const cartResolvers = {
       },
       { req }
     ) => {
+      console.log("in create cart resolver: ", products);
       return await createCart(
         { total_price_amount, products, discount, total_price_with_discount },
         req.user

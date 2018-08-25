@@ -32,7 +32,7 @@
     ]
   },
   "dependencies": {
-    "apollo-server-express": "^2.0.0",
+    "apollo-server-express": "^2.0.3",
     "aws-sdk": "^2.279.1",
     "axios": "^0.18.0",
     "bcrypt": "^3.0.0",

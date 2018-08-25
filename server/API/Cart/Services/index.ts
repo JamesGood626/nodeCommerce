@@ -13,6 +13,7 @@ import { ICart } from "../Models/cart";
 // to use for set, may try refactoring for that later.
 export const createCart = (input: ICart, user) => {
   return new Promise(async (resolve, reject) => {
+    console.log("creating cart: ", input);
     const retrievedUser = await User.findOne({ email: user.email }).then(
       result => result
     );

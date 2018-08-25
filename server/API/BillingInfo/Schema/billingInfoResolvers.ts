@@ -19,6 +19,7 @@ export const billingInfoResolvers = {
       { input: { street_address, apartment, city, state, zip, country } },
       { req }
     ) => {
+      console.log("create Billing info resolver: ", street_address);
       return await createBillingInfo(
         { street_address, apartment, city, state, zip, country },
         req.user
@@ -35,7 +36,6 @@ export const billingInfoResolvers = {
       );
     },
     deleteBillingInfo: async (_, __, { req }) => {
-      console.log("Delete billing info resolver called: ");
       return await deleteBillingInfo(req.user);
     }
   }

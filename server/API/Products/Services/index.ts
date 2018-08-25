@@ -8,12 +8,16 @@ export const getAllProducts = async () => {
   return allProducts;
 };
 
-export const createProduct = (input: IProduct, user) => {
+export const createProduct = (input, user) => {
   return new Promise(async (resolve, reject) => {
+    console.log(
+      "Inside of createProduct helper function. Heres input: ",
+      input
+    );
     const product = new Product(input);
     await product.save();
     console.log("THE SAVED PRODUCT: ", product);
-    return resolve(product as any);
+    return resolve(product);
   });
 };
 

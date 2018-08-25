@@ -1,11 +1,3 @@
-// import { mergeSchemas } from "graphql-tools";
-// import userSchema from "./Accounts/Schema";
-// import BillingInfoSchema from "./BillingInfo/Schema";
-// import CartSchema from "./Cart/Schema";
-// import ProductSchema from "./Products/Schema";
-// import userReviewSchema from "./UserReviews/Schema";
-// import { DateScalarSchema } from "./CustomScalars/customDateScalarType";
-
 import { gql } from "apollo-server-express";
 import { userTypeDef } from "./Accounts/Schema/userType";
 import { userResolvers } from "./Accounts/Schema/userResolvers";
@@ -23,54 +15,11 @@ import {
 } from "./CustomScalars/customDateScalarType";
 
 const typeDef = gql`
-  input BillingInfoInput {
-    street_address: String!
-    apartment: String
-    city: String!
-    state: String
-    zip: String
-    country: String!
-  }
-
-  input CartInput {
-    id: Int!
-    total_price_amount: Int!
-    products: [ProductInput!]!
-    discount: Int
-    total_price_with_discount: Int
-  }
-
-  input ProductInput {
-    product_title: String!
-    description: String!
-    price: Int!
-    sale_price: Int
-    sale_price_start: Date
-    sale_price_expiry: Date
-    shipping_time: String
-    images: [String!]!
-  }
-
   type Query {
-    allUsers: [User]
-    allBillingInfo: [BillingInfo]
-    allCarts: [Cart]
-    allProducts: [Product]
+    _: Boolean
   }
-
   type Mutation {
-    createUser(email: String!, password: String!): User
-    loginUser(email: String!, password: String!): User
-    updatePassword(
-      email: String!
-      oldPassword: String!
-      newPassword: String!
-    ): User
-    createBillingInfo(input: BillingInfoInput): BillingInfo
-    editBillingInfo(input: BillingInfoInput): BillingInfo
-    deleteBillingInfo: User
-    createCart(input: CartInput): User
-    createProduct(input: ProductInput): Product
+    _: Boolean
   }
 `;
 
