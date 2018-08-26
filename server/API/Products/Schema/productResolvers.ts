@@ -1,7 +1,8 @@
 // import { IBillingInfo } from "../Models/billingInfo";
 import {
   getAllProducts,
-  createProduct
+  createProduct,
+  editProduct
   // editBillingInfo,
   // deleteBillingInfo
 } from "../Services";
@@ -16,13 +17,62 @@ export const productResolvers = {
     createProduct: async (
       _,
       {
-        input: { product_title, description, price, sale_price_start, images }
+        input: {
+          product_title,
+          description,
+          price,
+          sale_price,
+          sale_price_start,
+          sale_price_expiry,
+          shipping_time,
+          images
+        }
       },
       { req }
     ) => {
-      console.log("createProduct Mutation called.");
       return await createProduct(
-        { product_title, description, price, sale_price_start, images },
+        {
+          product_title,
+          description,
+          price,
+          sale_price,
+          sale_price_start,
+          sale_price_expiry,
+          shipping_time,
+          images
+        },
+        req.user
+      );
+    },
+    editProduct: async (
+      _,
+      {
+        input: {
+          product_id,
+          product_title,
+          description,
+          price,
+          sale_price,
+          sale_price_start,
+          sale_price_expiry,
+          shipping_time,
+          images
+        }
+      },
+      { req }
+    ) => {
+      return await editProduct(
+        {
+          product_id,
+          product_title,
+          description,
+          price,
+          sale_price,
+          sale_price_start,
+          sale_price_expiry,
+          shipping_time,
+          images
+        },
         req.user
       );
     }

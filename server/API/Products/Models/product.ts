@@ -33,6 +33,9 @@ export const productSchema = new Schema({
   sale_price_start: {
     type: Date
   },
+  sale_price_expiry: {
+    type: Date
+  },
   shipping_time: {
     type: String
   },
@@ -53,7 +56,3 @@ export const Product: Model<IProductModel> = model<IProductModel>(
   "Product",
   productSchema
 );
-
-// sale_price_expiry: {
-//   type: Date
-// },
