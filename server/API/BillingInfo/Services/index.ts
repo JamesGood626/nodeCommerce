@@ -38,7 +38,6 @@ export const editBillingInfo = async (input: IBillingInfo, user) => {
 
 export const deleteBillingInfo = user => {
   return new Promise(async (resolve, reject) => {
-    console.log("DELETE BILLING INFO IS BEING CALLED.");
     const retrievedUser = await User.findOne({ email: user.email }).then(
       result => result
     );

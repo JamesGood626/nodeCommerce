@@ -1,15 +1,18 @@
 import * as request from "supertest";
 import { app } from "../../../app";
 import { Product } from "../Models/product";
-import { createUser } from "../../../Services/auth";
-// import { initMongoMongooseConnection } from '../../Middleware';
-import { dropUserCollection } from "../../../Services/tests/test-helpers";
-// import { User } from "../../API/Accounts/Models/user";
 
 const dropProductCollection = async () => {
   await Product.remove({}, err =>
     console.log("Product Collection Drop Error: ", err)
   );
+  // Had to add this to facilitate creating two subsequent products
+  // in the retrieve all products test. Otherwise I would receive a
+  // duplicate key error index for images.
+  await Product.collection.dropIndexes((err, result) => {
+    console.log("The error dropping all indexes: ", err);
+    console.log("The result dropping all indexes: ", result);
+  });
 };
 
 describe("Test product CRUD Operations via GraphQL queries and mutations", () => {
@@ -90,7 +93,6 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
         images
       }
     } = response.body.data;
-    console.log("The product create response: ", response.body.data);
     // Front end will always need to use new Date on the response from graphql
     // console.log("THE SALE_PRICE_START: ", new Date(sale_price_start));
     expect((response as any).statusCode).toBe(200);
@@ -104,6 +106,115 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     );
     expect(shipping_time).toBe(mutationInput.shipping_time);
     expect(images).toEqual(mutationInput.images);
+    done();
+  });
+
+  test("GraphQL Mutation successfully retrieves all products.", async done => {
+    expect.assertions(14);
+    // for verifying a correct date instance on the client.
+    // date instanceof Date && !isNan(date.getTime())
+    const firstMutationCreateInput = {
+      product_title: "Planet",
+      description: "The most awesome product description.",
+      price: 9.99,
+      images: [
+        "mercury",
+        "venus",
+        "earth",
+        "mars",
+        "jupiter",
+        "saturn",
+        "uranus",
+        "neptune"
+      ]
+    };
+    const firstPostCreateData = {
+      query: `mutation createProductOp($input: ProductInput) {
+                    createProduct(input: $input) {
+                      _id
+                    }
+                  }`,
+      operationName: "createProductOp",
+      variables: {
+        input: firstMutationCreateInput
+      }
+    };
+
+    const firstCreateResponse = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(firstPostCreateData);
+
+    expect((firstCreateResponse as any).statusCode).toBe(200);
+
+    const secondMutationCreateInput = {
+      product_title: "Elve Figurine",
+      description: "This product description is fire.",
+      price: 29.99,
+      images: ["prancer", "dancer", "vixen", "rudolph"]
+    };
+    const secondPostCreateData = {
+      query: `mutation createProductOp($input: ProductInput) {
+                      createProduct(input: $input) {
+                        _id
+                      }
+                    }`,
+      operationName: "createProductOp",
+      variables: {
+        input: secondMutationCreateInput
+      }
+    };
+
+    const secondCreateResponse = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(secondPostCreateData);
+
+    expect((secondCreateResponse as any).statusCode).toBe(200);
+
+    const postData = {
+      query: `query allProductsOp {
+                        allProducts {
+                          _id
+                          product_title
+                          description
+                          price
+                          images
+                        }
+                      }`,
+      operationName: "allProductsOp"
+    };
+
+    const response = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(postData);
+
+    const firstProductId = firstCreateResponse.body.data.createProduct._id;
+    const secondProductId = secondCreateResponse.body.data.createProduct._id;
+    const [firstProduct, secondProduct] = response.body.data.allProducts;
+    expect((response as any).statusCode).toBe(200);
+    expect(response.body.data.allProducts.length).toEqual(2);
+    expect(firstProduct._id).toBe(firstProductId);
+    expect(firstProduct.product_title).toBe(
+      firstMutationCreateInput.product_title
+    );
+    expect(firstProduct.description).toBe(firstMutationCreateInput.description);
+    expect(firstProduct.price).toBe(firstMutationCreateInput.price);
+    expect(firstProduct.images).toEqual(firstMutationCreateInput.images);
+    expect(secondProduct._id).toBe(secondProductId);
+    expect(secondProduct.product_title).toBe(
+      secondMutationCreateInput.product_title
+    );
+    expect(secondProduct.description).toBe(
+      secondMutationCreateInput.description
+    );
+    expect(secondProduct.price).toBe(secondMutationCreateInput.price);
+    expect(secondProduct.images).toEqual(secondMutationCreateInput.images);
+
     done();
   });
 
@@ -150,8 +261,6 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     const {
       createProduct: { _id, product_title, description, price }
     } = createResponse.body.data;
-    // Front end will always need to use new Date on the response from graphql
-    // console.log("THE SALE_PRICE_START: ", new Date(sale_price_start));
     expect((createResponse as any).statusCode).toBe(200);
     expect(product_title).toBe(mutationCreateInput.product_title);
     expect(description).toBe(mutationCreateInput.description);

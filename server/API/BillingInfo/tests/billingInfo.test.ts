@@ -1,9 +1,7 @@
 import * as request from "supertest";
 import { app } from "../../../app";
 import { createUser } from "../../../Services/auth";
-// import { initMongoMongooseConnection } from '../../Middleware';
 import { dropUserCollection } from "../../../Services/tests/test-helpers";
-// import { User } from "../../API/Accounts/Models/user";
 
 describe("Test billing info CRUD Operations via GraphQL queries and mutations", () => {
   let createdRequest;
