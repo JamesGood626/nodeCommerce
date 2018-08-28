@@ -37,7 +37,10 @@ export const userSchema: Schema = new Schema({
       type: Schema.Types.ObjectId,
       ref: "UserReview"
     }
-  ]
+  ],
+  is_admin: {
+    type: Boolean
+  }
 });
 
 export const User: Model<IUserModel> = model<IUserModel>("User", userSchema);

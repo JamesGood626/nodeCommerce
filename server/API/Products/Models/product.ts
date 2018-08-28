@@ -43,13 +43,13 @@ export const productSchema = new Schema({
     type: [String],
     unique: true,
     required: true
-  }
-  // user_reviews: [
-  //   {
-  //     type: Schema.Types.ObjectId,
-  //     ref: "UserReview"
-  //   }
-  // ]
+  },
+  user_reviews: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "UserReview"
+    }
+  ]
 });
 
 export const Product: Model<IProductModel> = model<IProductModel>(

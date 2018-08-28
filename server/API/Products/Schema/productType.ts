@@ -36,6 +36,10 @@ export const productTypeDef = gql`
     images: [String]
   }
 
+  input DeleteProductInput {
+    product_id: String!
+  }
+
   extend type Query {
     allProducts: [Product]
   }
@@ -43,6 +47,7 @@ export const productTypeDef = gql`
   extend type Mutation {
     createProduct(input: ProductInput): Product
     editProduct(input: EditProductInput): Product
+    deleteProduct(input: DeleteProductInput): Boolean
   }
 `;
 

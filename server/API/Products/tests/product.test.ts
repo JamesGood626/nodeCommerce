@@ -1,6 +1,10 @@
 import * as request from "supertest";
 import { app } from "../../../app";
 import { Product } from "../Models/product";
+import { createUser } from "../../../Services/auth";
+import { dropUserCollection } from "../../../Services/tests/test-helpers";
+
+// TODO: add userReviews to the edit product test
 
 const dropProductCollection = async () => {
   await Product.remove({}, err =>
@@ -25,7 +29,26 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
   });
 
   beforeEach(async () => {
-    // await dropUserCollection();
+    await dropUserCollection();
+    await createUser("jessica@gmail.com", "password");
+    const postData = {
+      query: `mutation loginUserOp($email: String!, $password: String!) {
+                  loginUser(email: $email, password: $password) {
+                    email
+                  }
+                }`,
+      operationName: "loginUserOp",
+      variables: {
+        email: "jessica@gmail.com",
+        password: "password"
+      }
+    };
+    const response = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(postData);
+
     await dropProductCollection();
   });
 
@@ -300,7 +323,102 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     expect(editProduct.price).toBe(mutationEditInput.price);
     done();
   });
+
+  test("GraphQL Mutation successfully prevents product deletion if not admin.", async done => {
+    // expect.assertions(9);
+    // for verifying a correct date instance on the client.
+    // date instanceof Date && !isNan(date.getTime())
+    const mutationCreateInput = {
+      product_title: "Planet",
+      description: "The most awesome product description.",
+      price: 9.99,
+      images: [
+        "mercury",
+        "venus",
+        "earth",
+        "mars",
+        "jupiter",
+        "saturn",
+        "uranus",
+        "neptune"
+      ]
+    };
+    const postCreateData = {
+      query: `mutation createProductOp($input: ProductInput) {
+                    createProduct(input: $input) {
+                      _id
+                    }
+                  }`,
+      operationName: "createProductOp",
+      variables: {
+        input: mutationCreateInput
+      }
+    };
+
+    const createResponse = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(postCreateData);
+
+    expect((createResponse as any).statusCode).toBe(200);
+
+    const {
+      createProduct: { _id }
+    } = createResponse.body.data;
+
+    const mutationDeleteInput = {
+      product_id: _id
+    };
+    const postDeleteData = {
+      query: `mutation deleteProductOp($input: DeleteProductInput) {
+                    deleteProduct(input: $input)
+                  }`,
+      operationName: "deleteProductOp",
+      variables: {
+        input: mutationDeleteInput
+      }
+    };
+
+    const deleteResponse = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(postDeleteData);
+
+    const { deleteProduct } = deleteResponse.body.data;
+    expect((deleteResponse as any).statusCode).toBe(200);
+    expect(deleteProduct).toBe(null);
+    // expect(editProduct.product_title).toBe(mutationEditInput.product_title);
+    // expect(editProduct.description).toBe(mutationEditInput.description);
+    // expect(editProduct.price).toBe(mutationEditInput.price);
+
+    const postData = {
+      query: `query allProductsOp {
+                        allProducts {
+                          _id
+                          product_title
+                          description
+                          price
+                          images
+                        }
+                      }`,
+      operationName: "allProductsOp"
+    };
+
+    const response = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(postData);
+
+    expect((response as any).statusCode).toBe(200);
+    expect(response.body.data.allProducts.length).toBe(1);
+    done();
+  });
 });
+
+// DELETE IS UP NEXT, THEN YOU CAN MOVE ON TO USER REVIEWS
 
 // query: '{ allUsers { id, email } }'
 // const postData = {

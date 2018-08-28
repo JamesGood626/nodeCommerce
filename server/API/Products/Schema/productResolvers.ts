@@ -1,10 +1,8 @@
-// import { IBillingInfo } from "../Models/billingInfo";
 import {
   getAllProducts,
   createProduct,
-  editProduct
-  // editBillingInfo,
-  // deleteBillingInfo
+  editProduct,
+  deleteProduct
 } from "../Services";
 
 export const productResolvers = {
@@ -72,6 +70,14 @@ export const productResolvers = {
           sale_price_expiry,
           shipping_time,
           images
+        },
+        req.user
+      );
+    },
+    deleteProduct: async (_, { input: { product_id } }, { req }) => {
+      return await deleteProduct(
+        {
+          product_id
         },
         req.user
       );
