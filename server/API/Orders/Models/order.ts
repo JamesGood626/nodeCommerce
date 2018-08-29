@@ -4,9 +4,8 @@ import { IProduct } from "../../Products/Models/product";
 export interface IShippingAddress {
   street_address: string;
   city: string;
-  state?: string;
-  province?: string;
-  zip_code?: string;
+  state: string;
+  zip_code: string;
   apartment?: string;
   country: string;
 }
@@ -21,13 +20,12 @@ const shippingAddressSchema = new Schema({
     required: true
   },
   state: {
-    type: String
-  },
-  province: {
-    type: String
+    type: String,
+    required: true
   },
   zip_code: {
-    type: String
+    type: String,
+    required: true
   },
   apartment: {
     type: String

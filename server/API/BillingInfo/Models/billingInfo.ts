@@ -2,10 +2,10 @@ import { Schema } from "mongoose";
 
 export interface IBillingInfo {
   street_address: string;
-  apartment?: string;
   city: string;
-  state?: string;
-  zip?: string;
+  state: string;
+  zip: string;
+  apartment?: string;
   country: string;
 }
 
