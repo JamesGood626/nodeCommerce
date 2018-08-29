@@ -9,7 +9,7 @@
     "server": "./node_modules/nodemon/bin/nodemon.js",
     "client": "npm run start --prefix ../client",
     "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "test": "jest --runInBand --forceExit --watch",
+    "test": "jest --runInBand --forceExit --watchAll",
     "lint": "tslint --project tsconfig.json --config tslint.json"
   },
   "author": "",

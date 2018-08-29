@@ -28,7 +28,7 @@ export const userResolvers = {
   },
   Mutation: {
     createUser: (parentValue, { email, password }): any => {
-      return createUser(email, password);
+      return createUser({ email, password });
     },
     loginUser: (
       parentValue,

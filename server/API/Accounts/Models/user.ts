@@ -39,7 +39,8 @@ export const userSchema: Schema = new Schema({
     }
   ],
   is_admin: {
-    type: Boolean
+    type: Boolean,
+    default: false
   }
 });
 

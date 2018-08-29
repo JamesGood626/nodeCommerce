@@ -5,41 +5,49 @@ import { Model } from "mongoose";
 import { User, IUserModel } from "../API/Accounts/Models/user";
 import { SuperUser, ISuperUserModel } from "../API/SuperUser/Models/superUser";
 
+interface ICreateUserInput {
+  email: string;
+  password: string;
+  is_admin?: boolean;
+}
+
 export const createUser = (
-  email: string,
-  password: string
+  createUserInput: ICreateUserInput
 ): Promise<object> => {
   return new Promise(async (resolve, reject) => {
+    const { email, is_admin, password } = createUserInput;
     const user = await User.findOne({ email })
       .then(result => result)
       .catch(err => console.log(err.message));
     if (user) {
       return false;
     } else {
-      const newUser = new User({ email });
+      const newUser = is_admin
+        ? new User({ email, is_admin })
+        : new User({ email });
       return resolve(hashPassword(newUser, password));
     }
   });
 };
 
-export const createSuperUser = (
-  username: string,
-  password: string
-): Promise<object> => {
-  return new Promise(async (resolve, reject) => {
-    await User.findOne({ username }, (err, user) => {
-      // figure out how to properly handle the two if cases for client side
-      if (err) {
-        return err;
-      }
-      if (user) {
-        return false;
-      }
-      const newSuperUser = new SuperUser({ username });
-      resolve(hashPassword(newSuperUser, password));
-    });
-  });
-};
+// export const createSuperUser = (
+//   username: string,
+//   password: string
+// ): Promise<object> => {
+//   return new Promise(async (resolve, reject) => {
+//     await User.findOne({ username }, (err, user) => {
+//       // figure out how to properly handle the two if cases for client side
+//       if (err) {
+//         return err;
+//       }
+//       if (user) {
+//         return false;
+//       }
+//       const newSuperUser = new SuperUser({ username });
+//       resolve(hashPassword(newSuperUser, password));
+//     });
+//   });
+// };
 
 export const login = (email, password, req): Promise<IUserModel | Error> => {
   // console.log("Login is running.");

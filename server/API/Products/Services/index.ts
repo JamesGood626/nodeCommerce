@@ -10,6 +10,10 @@ export const getAllProducts = async () => {
 };
 
 export const createProduct = (input, user) => {
+  console.log("USER IN CREATE: ", user);
+  if (!user.is_admin) {
+    return;
+  }
   return new Promise(async (resolve, reject) => {
     const product = new Product(input);
     await product.save();
@@ -18,6 +22,10 @@ export const createProduct = (input, user) => {
 };
 
 export const editProduct = async (input, user) => {
+  console.log("USER IN EDITT: ", user);
+  if (!user.is_admin) {
+    return;
+  }
   return new Promise(async (resolve, reject) => {
     const { product_id } = input;
     const product = await Product.findByIdAndUpdate(
@@ -36,21 +44,15 @@ export const editProduct = async (input, user) => {
 };
 
 export const deleteProduct = ({ product_id }, user) => {
-  // if user isn't an admin then don't execute
-  console.log("THE USER IN DELETE PRODUCT: ", user);
-  if (user._id) {
-    console.log("USER ISN'T ADMIN: ", user.is_admin);
+  if (!user.is_admin) {
     return false;
   }
   return new Promise(async (resolve, reject) => {
-    console.log("DELETE BILLING INFO IS BEING CALLED.");
     const productDeleted = await Product.findById(product_id).then(result => {
       if (result) {
-        console.log("product to be deleted: ", result);
         return result.remove();
       }
     });
-    console.log("ANNND THE PRODUCT DELETED: ", productDeleted);
     return resolve(productDeleted as any);
   });
 };

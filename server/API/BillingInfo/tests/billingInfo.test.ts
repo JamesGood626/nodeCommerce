@@ -14,7 +14,7 @@ describe("Test billing info CRUD Operations via GraphQL queries and mutations", 
 
   beforeEach(async () => {
     await dropUserCollection();
-    await createUser("jessica@gmail.com", "password");
+    await createUser({ email: "jessica@gmail.com", password: "password" });
     const postData = {
       query: `mutation loginUserOp($email: String!, $password: String!) {
                   loginUser(email: $email, password: $password) {
