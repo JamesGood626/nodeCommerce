@@ -6,6 +6,9 @@ import { dropUserCollection } from "../../../Services/tests/test-helpers";
 
 // TODO: add userReviews to the edit product test
 
+// Last left off trying to figure out why the admin user created and logged in
+// in the before each is creating the product, but I get an error when it's time to edit.
+// Need to see if response is 200, and if perhaps the session timeout is set too short.
 const dropProductCollection = async () => {
   await Product.remove({}, err =>
     console.log("Product Collection Drop Error: ", err)
@@ -47,7 +50,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
         password: "password"
       }
     };
-    const loginResponse = await createdRequest
+    await createdRequest
       .post("/graphql")
       .set("Accept", "application/json")
       .type("form")
@@ -284,7 +287,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
       .send(postCreateData);
 
     const {
-      createProduct: { _id, product_title, description, price }
+      createProduct: { _id }
     } = createResponse.body.data;
     expect((createResponse as any).statusCode).toBe(200);
 
@@ -343,7 +346,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
   });
 
   test("GraphQL Mutation allows product to be edited if user is admin.", async done => {
-    // expect.assertions(4);
+    expect.assertions(7);
     const mutationCreateInput = {
       product_title: "Planet",
       description: "The most awesome product description.",
@@ -380,15 +383,15 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
       .type("form")
       .send(postCreateData);
 
-    const {
-      createProduct
-    } = createResponse.body.data;
+    const { createProduct } = createResponse.body.data;
+    const createdProductId = createProduct._id;
+    expect((createResponse as any).statusCode).toBe(200);
     expect(createProduct.product_title).toBe(mutationCreateInput.product_title);
     expect(createProduct.description).toBe(mutationCreateInput.description);
     expect(createProduct.price).toBe(mutationCreateInput.price);
 
     const mutationEditInput = {
-      product_id: _id,
+      product_id: createdProductId,
       product_title: "ExoPlanet",
       description: "The most epensive product description.",
       price: 19.99
@@ -414,8 +417,9 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
       .type("form")
       .send(postEditData);
 
-    const createdProductId = createProduct._id
-    const { editProduct: { _id, product_title } } = editResponse.body.data;
+    const {
+      editProduct: { _id, product_title }
+    } = editResponse.body.data;
     expect((editResponse as any).statusCode).toBe(200);
     expect(_id).toBe(createdProductId);
     expect(product_title).toBe(mutationEditInput.product_title);
@@ -619,8 +623,6 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 });
-
-// DELETE IS UP NEXT, THEN YOU CAN MOVE ON TO USER REVIEWS
 
 // query: '{ allUsers { id, email } }'
 // const postData = {

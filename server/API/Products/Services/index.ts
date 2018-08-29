@@ -10,7 +10,6 @@ export const getAllProducts = async () => {
 };
 
 export const createProduct = (input, user) => {
-  console.log("USER IN CREATE: ", user);
   if (!user.is_admin) {
     return;
   }
@@ -22,7 +21,6 @@ export const createProduct = (input, user) => {
 };
 
 export const editProduct = async (input, user) => {
-  console.log("USER IN EDITT: ", user);
   if (!user.is_admin) {
     return;
   }

@@ -32,6 +32,12 @@ export const userSchema: Schema = new Schema({
   cart: {
     type: cartSchema
   },
+  orders: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "Order"
+    }
+  ],
   user_reviews: [
     {
       type: Schema.Types.ObjectId,
