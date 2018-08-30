@@ -1,3 +1,4 @@
+import { isUserAuthenticated, isAdmin } from "../../middlewareResolvers";
 import {
   getAllProducts,
   createProduct,
@@ -28,6 +29,7 @@ export const productResolvers = {
       },
       { req }
     ) => {
+      isAdmin(req.user);
       return await createProduct(
         {
           product_title,
@@ -59,6 +61,7 @@ export const productResolvers = {
       },
       { req }
     ) => {
+      isAdmin(req.user);
       return await editProduct(
         {
           product_id,
@@ -75,6 +78,7 @@ export const productResolvers = {
       );
     },
     deleteProduct: async (_, { input: { product_id } }, { req }) => {
+      isAdmin(req.user);
       return await deleteProduct(
         {
           product_id

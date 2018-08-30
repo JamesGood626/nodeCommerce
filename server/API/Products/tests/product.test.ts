@@ -63,82 +63,6 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     await server.close(done);
   });
 
-  test("GraphQL Mutation successfully creates new product.", async done => {
-    expect.assertions(9);
-    // for verifying a correct date instance on the client.
-    // date instanceof Date && !isNan(date.getTime())
-    const mutationInput = {
-      product_title: "Planet",
-      description: "The most awesome product description.",
-      price: 9.99,
-      sale_price: 7.99,
-      sale_price_start: new Date("2016-01-01T13:10:20Z"),
-      sale_price_expiry: new Date("2016-01-04T13:10:20Z"),
-      shipping_time: "3-4 days",
-      images: [
-        "mercury",
-        "venus",
-        "earth",
-        "mars",
-        "jupiter",
-        "saturn",
-        "uranus",
-        "neptune"
-      ]
-    };
-    const postData = {
-      query: `mutation createProductOp($input: ProductInput) {
-                    createProduct(input: $input) {
-                      product_title
-                      description
-                      price
-                      sale_price
-                      sale_price_start
-                      sale_price_expiry
-                      shipping_time
-                      images
-                    }
-                  }`,
-      operationName: "createProductOp",
-      variables: {
-        input: mutationInput
-      }
-    };
-
-    const response = await createdRequest
-      .post("/graphql")
-      .set("Accept", "application/json")
-      .type("form")
-      .send(postData);
-
-    const {
-      createProduct: {
-        product_title,
-        description,
-        price,
-        sale_price,
-        sale_price_start,
-        sale_price_expiry,
-        shipping_time,
-        images
-      }
-    } = response.body.data;
-    // Front end will always need to use new Date on the response from graphql
-    // console.log("THE SALE_PRICE_START: ", new Date(sale_price_start));
-    expect((response as any).statusCode).toBe(200);
-    expect(product_title).toBe(mutationInput.product_title);
-    expect(description).toBe(mutationInput.description);
-    expect(price).toBe(mutationInput.price);
-    expect(sale_price).toBe(mutationInput.sale_price);
-    expect(new Date(sale_price_start)).toEqual(mutationInput.sale_price_start);
-    expect(new Date(sale_price_expiry)).toEqual(
-      mutationInput.sale_price_expiry
-    );
-    expect(shipping_time).toBe(mutationInput.shipping_time);
-    expect(images).toEqual(mutationInput.images);
-    done();
-  });
-
   test("GraphQL Mutation successfully retrieves all products.", async done => {
     expect.assertions(14);
     // for verifying a correct date instance on the client.
@@ -248,8 +172,180 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
+  test("GraphQL Mutation allows new product to be created if user is admin.", async done => {
+    expect.assertions(9);
+    // for verifying a correct date instance on the client.
+    // date instanceof Date && !isNan(date.getTime())
+    const mutationInput = {
+      product_title: "Planet",
+      description: "The most awesome product description.",
+      price: 9.99,
+      sale_price: 7.99,
+      sale_price_start: new Date("2016-01-01T13:10:20Z"),
+      sale_price_expiry: new Date("2016-01-04T13:10:20Z"),
+      shipping_time: "3-4 days",
+      images: [
+        "mercury",
+        "venus",
+        "earth",
+        "mars",
+        "jupiter",
+        "saturn",
+        "uranus",
+        "neptune"
+      ]
+    };
+    const postData = {
+      query: `mutation createProductOp($input: ProductInput) {
+                    createProduct(input: $input) {
+                      product_title
+                      description
+                      price
+                      sale_price
+                      sale_price_start
+                      sale_price_expiry
+                      shipping_time
+                      images
+                    }
+                  }`,
+      operationName: "createProductOp",
+      variables: {
+        input: mutationInput
+      }
+    };
+
+    const response = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(postData);
+
+    const {
+      createProduct: {
+        product_title,
+        description,
+        price,
+        sale_price,
+        sale_price_start,
+        sale_price_expiry,
+        shipping_time,
+        images
+      }
+    } = response.body.data;
+    // Front end will always need to use new Date on the response from graphql
+    // console.log("THE SALE_PRICE_START: ", new Date(sale_price_start));
+    expect((response as any).statusCode).toBe(200);
+    expect(product_title).toBe(mutationInput.product_title);
+    expect(description).toBe(mutationInput.description);
+    expect(price).toBe(mutationInput.price);
+    expect(sale_price).toBe(mutationInput.sale_price);
+    expect(new Date(sale_price_start)).toEqual(mutationInput.sale_price_start);
+    expect(new Date(sale_price_expiry)).toEqual(
+      mutationInput.sale_price_expiry
+    );
+    expect(shipping_time).toBe(mutationInput.shipping_time);
+    expect(images).toEqual(mutationInput.images);
+    done();
+  });
+
+  test("GraphQL Mutation prevents product from being created if user isn't admin.", async done => {
+    expect.assertions(7);
+    const mutationCreateInput = {
+      product_title: "Planet",
+      description: "The most awesome product description.",
+      price: 9.99,
+      images: [
+        "mercury",
+        "venus",
+        "earth",
+        "mars",
+        "jupiter",
+        "saturn",
+        "uranus",
+        "neptune"
+      ]
+    };
+    const postCreateData = {
+      query: `mutation createProductOp($input: ProductInput) {
+                    createProduct(input: $input) {
+                      _id
+                      product_title
+                      description
+                      price
+                    }
+                  }`,
+      operationName: "createProductOp",
+      variables: {
+        input: mutationCreateInput
+      }
+    };
+
+    const createResponse = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(postCreateData);
+
+    expect((createResponse as any).statusCode).toBe(200);
+
+    await createUser({ email: "jessica@gmail.com", password: "password" });
+    const loginPostDataTwo = {
+      query: `mutation loginUserOp($email: String!, $password: String!) {
+                  loginUser(email: $email, password: $password) {
+                    email
+                  }
+                }`,
+      operationName: "loginUserOp",
+      variables: {
+        email: "jessica@gmail.com",
+        password: "password"
+      }
+    };
+    const loginResponseTwo = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(loginPostDataTwo);
+
+    expect((loginResponseTwo as any).statusCode).toBe(200);
+
+    const secondMutationCreateInput = {
+      product_title: "Elve Figurine",
+      description: "This product description is fire.",
+      price: 29.99,
+      images: ["prancer", "dancer", "vixen", "rudolph"]
+    };
+    const secondPostCreateData = {
+      query: `mutation createProductOp($input: ProductInput) {
+                      createProduct(input: $input) {
+                        _id
+                      }
+                    }`,
+      operationName: "createProductOp",
+      variables: {
+        input: secondMutationCreateInput
+      }
+    };
+
+    const secondCreateResponse = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(secondPostCreateData);
+
+    expect((secondCreateResponse as any).statusCode).toBe(200);
+
+    const { createProduct } = secondCreateResponse.body.data;
+    const [error] = secondCreateResponse.body.errors;
+    expect((secondCreateResponse as any).statusCode).toBe(200);
+    expect(createProduct).toBe(null);
+    expect(error.message).toBe("User is not admin.");
+    expect(error.extensions.code).toBe("FORBIDDEN");
+    done();
+  });
+
   test("GraphQL Mutation prevents product from being edited if user isn't admin.", async done => {
-    expect.assertions(4);
+    expect.assertions(6);
     const mutationCreateInput = {
       product_title: "Planet",
       description: "The most awesome product description.",
@@ -340,8 +436,11 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
       .send(postEditData);
 
     const { editProduct } = editResponse.body.data;
+    const [error] = editResponse.body.errors;
     expect((editResponse as any).statusCode).toBe(200);
     expect(editProduct).toBe(null);
+    expect(error.message).toBe("User is not admin.");
+    expect(error.extensions.code).toBe("FORBIDDEN");
     done();
   });
 
@@ -427,7 +526,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
   });
 
   test("GraphQL Mutation successfully prevents product deletion if not admin.", async done => {
-    expect.assertions(6);
+    expect.assertions(8);
     const mutationCreateInput = {
       product_title: "Planet",
       description: "The most awesome product description.",
@@ -508,8 +607,11 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
       .send(postDeleteData);
 
     const { deleteProduct } = deleteResponse.body.data;
+    const [error] = deleteResponse.body.errors;
     expect((deleteResponse as any).statusCode).toBe(200);
-    expect(deleteProduct).toBe(false);
+    expect(error.message).toBe("User is not admin.");
+    expect(error.extensions.code).toBe("FORBIDDEN");
+    expect(deleteProduct).toBe(null);
 
     const postData = {
       query: `query allProductsOp {

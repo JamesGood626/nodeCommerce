@@ -1,4 +1,4 @@
-// import { IBillingInfo } from "../Models/billingInfo";
+import { isUserAuthenticated } from "../../middlewareResolvers";
 import {
   createBillingInfo,
   editBillingInfo,
@@ -19,6 +19,7 @@ export const billingInfoResolvers = {
       { input: { street_address, apartment, city, state, zip, country } },
       { req }
     ) => {
+      isUserAuthenticated(req.user);
       return await createBillingInfo(
         { street_address, apartment, city, state, zip, country },
         req.user
@@ -29,12 +30,14 @@ export const billingInfoResolvers = {
       { input: { street_address, apartment, city, state, zip, country } },
       { req }
     ) => {
+      isUserAuthenticated(req.user);
       return await editBillingInfo(
         { street_address, apartment, city, state, zip, country },
         req.user
       );
     },
     deleteBillingInfo: async (_, __, { req }) => {
+      isUserAuthenticated(req.user);
       return await deleteBillingInfo(req.user);
     }
   }
