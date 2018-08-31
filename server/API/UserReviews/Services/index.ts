@@ -8,9 +8,18 @@ export const allUserReviews = async () => {
     );
 };
 
+// Whenever a review is created. Will need to get that Product by id
+// so that I may push the new review to it's array which references.
+// user reviews.
+
 export const createReview = async (input, req) => {
-  const finalInput = { ...input, reviewer: req.user_id };
-  return await new UserReview(finalInput);
+  const creationDate = Date.now();
+  console.log(creationDate);
+  const finalInput = { ...input, reviewer: req._id, date: creationDate };
+  const userReview = await new UserReview(finalInput);
+  await userReview.save();
+  console.log("The created user review: ", userReview);
+  return userReview;
 };
 
 // export const updateReview = async ({ reviewId, rating, comment, req }) => {

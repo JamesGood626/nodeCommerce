@@ -1,9 +1,7 @@
-import { gql } from "apollo-server-express";
-
 export const userReviewTypeDef = `
   type UserReview {
     _id: String!
-    reviewer: User!
+    reviewer: String!
     rating: Int!
     comment: String!
     date: Date
@@ -12,7 +10,7 @@ export const userReviewTypeDef = `
   }
 
   input CreateUserReviewInput {
-    rating: String!
+    rating: Int!
     comment: String!
     product_reviewed: String!
   }

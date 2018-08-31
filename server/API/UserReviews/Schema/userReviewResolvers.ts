@@ -18,7 +18,8 @@ export const userReviewResolvers = {
       { input: { rating, comment, product_reviewed } },
       { req }
     ) => {
-      isAdmin(req.user);
+      console.log("Create review resolver is hit: ", req.user);
+      isUserAuthenticated(req.user);
       return await createReview(
         {
           rating,

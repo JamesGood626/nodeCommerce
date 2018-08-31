@@ -35,6 +35,7 @@ export const productTypeDef = gql`
     shipping_time: String
     sale_price_expiry: Date
     images: [String]
+    user_reviews: [String]
   }
 
   input DeleteProductInput {
