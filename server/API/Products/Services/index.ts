@@ -10,9 +10,6 @@ export const getAllProducts = async () => {
 };
 
 export const createProduct = (input, user) => {
-  if (!user.is_admin) {
-    return;
-  }
   return new Promise(async (resolve, reject) => {
     const product = new Product(input);
     await product.save();
@@ -21,9 +18,6 @@ export const createProduct = (input, user) => {
 };
 
 export const editProduct = async (input, user) => {
-  if (!user.is_admin) {
-    return;
-  }
   return new Promise(async (resolve, reject) => {
     const { product_id } = input;
     const product = await Product.findByIdAndUpdate(
@@ -42,9 +36,6 @@ export const editProduct = async (input, user) => {
 };
 
 export const deleteProduct = ({ product_id }, user) => {
-  if (!user.is_admin) {
-    return false;
-  }
   return new Promise(async (resolve, reject) => {
     const productDeleted = await Product.findById(product_id).then(result => {
       if (result) {

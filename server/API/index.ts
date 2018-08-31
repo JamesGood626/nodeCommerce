@@ -9,8 +9,8 @@ import { orderTypeDef } from "./Orders/Schema/orderType";
 import { orderResolvers } from "./Orders/Schema/orderResolvers";
 import { productTypeDef } from "./Products/Schema/productType";
 import { productResolvers } from "./Products/Schema/productResolvers";
-// import { userReviewTypeDef } from "./UserReviews/Schema/userReviewType";
-// import { userReviewResolvers } from "./userReviews/Schema/userReview";
+import { userReviewTypeDef } from "./UserReviews/Schema/userReviewType";
+import { userReviewResolvers } from "./UserReviews/Schema/userReviewResolvers";
 import {
   dateScalarSchema,
   dateScalarResolver
@@ -33,6 +33,7 @@ export const typeDefs: any = [
   cartTypeDef,
   orderTypeDef,
   productTypeDef,
+  userReviewTypeDef,
   dateScalarSchema
 ];
 
@@ -42,6 +43,7 @@ export const resolvers: any = [
   cartResolvers,
   orderResolvers,
   productResolvers,
+  userReviewResolvers,
   dateScalarResolver
 ];
 

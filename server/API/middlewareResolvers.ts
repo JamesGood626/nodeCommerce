@@ -2,10 +2,8 @@ import { AuthenticationError, ForbiddenError } from "apollo-server-express";
 
 export const isUserAuthenticated = user => {
   if (typeof user === "undefined") {
-    console.log("THE USER ISN'T AUTHENTICATED");
     throw new AuthenticationError("Authentication required.");
   }
-  console.log("IS USER AUTHENTICATED CHECK RAN");
 };
 
 export const isAdmin = user => {
@@ -28,3 +26,15 @@ export const isAdmin = user => {
 //         locations: [ { line: 2, column: 21 } ],
 //         path: [ 'editProduct' ],
 //         extensions: { code: 'FORBIDDEN' } }
+
+// There's also this
+// const server = new ApolloServer({
+//   typeDefs,
+//   resolvers,
+//   formatError: error => {
+//     console.log(error);
+//     return new Error("Internal server error");
+//   }
+// });
+// Which is useful for formatting the error before sending it back to
+// the client.

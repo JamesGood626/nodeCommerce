@@ -11,6 +11,7 @@ export const productTypeDef = gql`
     sale_price_expiry: Date
     shipping_time: String
     images: [String!]!
+    user_reviews: [UserReview]
   }
 
   input ProductInput {
@@ -50,5 +51,3 @@ export const productTypeDef = gql`
     deleteProduct(input: DeleteProductInput): Boolean
   }
 `;
-
-// user_reviews: [UserReview]

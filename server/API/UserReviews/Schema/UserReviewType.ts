@@ -1,9 +1,8 @@
 import { gql } from "apollo-server-express";
 
 export const userReviewTypeDef = `
-  scalar Date
   type UserReview {
-    id: String!
+    _id: String!
     reviewer: User!
     rating: Int!
     comment: String!
@@ -12,11 +11,17 @@ export const userReviewTypeDef = `
     product_reviewed: Product!
   }
 
+  input CreateUserReviewInput {
+    rating: String!
+    comment: String!
+    product_reviewed: String!
+  }
+
   extend type Query {
-    
+    allUserReviews: [UserReview]
   }
 
   extend type Mutation {
-    
+    createReview(input: CreateUserReviewInput): UserReview
   }
 `;
