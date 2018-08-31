@@ -1,6 +1,7 @@
 import * as request from "supertest";
 import { app } from "../../../app";
 import { UserReview } from "../Models/userReview";
+import { User } from "../../Accounts/Models/user";
 // import { Product } from "../../Products/Models/product";
 import { createUser } from "../../../Services/auth";
 import { dropUserCollection } from "../../../Services/tests/test-helpers";
@@ -33,7 +34,6 @@ const createReviewGraphQLRequest = async (
     .send(firstPostCreateData);
   const createdReviewId = createdReviewResponse.body.data.createReview._id;
   const createReviewStatusCode = createdReviewResponse.statusCode;
-  console.log(createdReviewResponse.body);
 
   return { createReviewStatusCode, createdReviewId, reviewCreateInput };
 };
@@ -129,7 +129,6 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
       createdRequest
     );
     expect(productId).not.toBe(null);
-    console.log("typeof productId: ", typeof productId);
     const {
       createReviewStatusCode,
       createdReviewId,
@@ -139,7 +138,10 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
       .populate("reviewer")
       .populate("product_reviewed")
       .then(result => result);
-    console.log(userReview);
+    const retrievedUser = await User.findOne({
+      email: "admin@gmail.com"
+    }).then(result => result);
+    // test that userReview date is a date
     expect(createReviewStatusCode).toBe(200);
     expect((userReview as any).rating).toBe(reviewCreateInput.rating);
     expect((userReview as any).comment).toBe(reviewCreateInput.comment);
@@ -154,8 +156,14 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
     expect((userReview as any).product_reviewed.description).toBe(
       productCreateInput.description
     );
+    expect(
+      (userReview as any).product_reviewed.user_reviews[0].toString()
+    ).toBe(createdReviewId);
     expect((userReview as any).product_reviewed.price).toBe(
       productCreateInput.price
+    );
+    expect((retrievedUser as any).user_reviews[0].toString()).toBe(
+      createdReviewId
     );
     expect((userReview as any).reviewer.is_admin).toBe(true);
   });

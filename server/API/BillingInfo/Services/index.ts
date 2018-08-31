@@ -38,9 +38,7 @@ export const editBillingInfo = async (input: IBillingInfo, user) => {
 
 export const deleteBillingInfo = user => {
   return new Promise(async (resolve, reject) => {
-    const retrievedUser = await User.findOne({ email: user.email }).then(
-      result => result
-    );
+    const retrievedUser = await User.findById(user._id).then(result => result);
     (retrievedUser as any).billing_info.remove();
     await (retrievedUser as any).save().catch(err => {
       console.log("ERROR SAVING UPDATED USER WITH NEW BILLING INFO: ", err); // TODO: Handle Error

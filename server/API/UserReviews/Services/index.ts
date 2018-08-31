@@ -1,4 +1,20 @@
 import { UserReview } from "../Models/userReview";
+import { User } from "../../Accounts/Models/user";
+import { Product } from "../../Products/Models/product";
+
+// const findAndUpdate = async (model, id, input) => {
+//   return await model.findByIdAndUpdate(
+//     id,
+//     { $set: input },
+//     { new: true },
+//     (err, result) => {
+//       if (err) {
+//         return console.log(err);
+//       }
+//       return result;
+//     }
+//   );
+// };
 
 export const allUserReviews = async () => {
   return await UserReview.find({})
@@ -12,12 +28,28 @@ export const allUserReviews = async () => {
 // so that I may push the new review to it's array which references.
 // user reviews.
 
-export const createReview = async (input, req) => {
+export const createReview = async (input, user) => {
+  const { product_reviewed } = input;
   const creationDate = Date.now();
   console.log(creationDate);
-  const finalInput = { ...input, reviewer: req._id, date: creationDate };
+  const finalInput = {
+    ...input,
+    product_reviewed,
+    reviewer: user._id,
+    date: creationDate
+  };
   const userReview = await new UserReview(finalInput);
   await userReview.save();
+  const retrievedUser = await User.findById(user._id).then(result => result);
+  const retrievedProduct = await Product.findById(product_reviewed).then(
+    result => result
+  );
+  (retrievedUser as any).user_reviews.push(userReview._id);
+  (retrievedUser as any).save();
+  (retrievedProduct as any).user_reviews.push(userReview._id);
+  (retrievedProduct as any).save();
+  console.log("The updateduser: ", retrievedUser);
+  console.log("The retrieved product: ", retrievedProduct);
   console.log("The created user review: ", userReview);
   return userReview;
 };
