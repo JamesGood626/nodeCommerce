@@ -31,7 +31,6 @@ export const allUserReviews = async () => {
 export const createReview = async (input, user) => {
   const { product_reviewed } = input;
   const creationDate = Date.now();
-  console.log(creationDate);
   const finalInput = {
     ...input,
     product_reviewed,
@@ -53,8 +52,16 @@ export const createReview = async (input, user) => {
 
 export const editReview = async (input, user) => {
   const { _id } = input;
-  const updatedReview = await findAndUpdate(UserReview, _id, input);
-  return updatedReview;
+  const userReviewIsOwn = user.user_reviews.filter(review => {
+    if (review.toString() === _id) {
+      return true;
+    }
+  });
+  if (userReviewIsOwn.length > 0) {
+    const updatedReview = await findAndUpdate(UserReview, _id, input);
+    return updatedReview;
+  }
+  return null;
 };
 
 // export const deleteReview = async (reviewId, req) => {

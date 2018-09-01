@@ -65,10 +65,14 @@ const editReviewGraphQLRequest = async (createdRequest, _id): Promise<any> => {
     .type("form")
     .send(firstPostEditData);
 
-  const updatedReviewId = updatedReviewResponse.body.data.editReview._id;
   const updatedReviewStatusCode = updatedReviewResponse.statusCode;
-
-  return { updatedReviewStatusCode, updatedReviewId, reviewEditInput };
+  const editReviewNullCheck = updatedReviewResponse.body.data.editReview;
+  if (editReviewNullCheck) {
+    const updatedReviewId = updatedReviewResponse.body.data.editReview._id;
+    return { updatedReviewStatusCode, updatedReviewId, reviewEditInput };
+  } else {
+    return { updatedReviewStatusCode, editReviewNullCheck };
+  }
 };
 
 const createProductGraphQLRequest = async (createdRequest): Promise<any> => {
@@ -105,8 +109,9 @@ const createProductGraphQLRequest = async (createdRequest): Promise<any> => {
     .type("form")
     .send(firstPostCreateData);
 
+  const productCreateStatusCode = productCreateResponse.statusCode;
   const productId = productCreateResponse.body.data.createProduct._id;
-  return { productId, productCreateInput };
+  return { productId, productCreateInput, productCreateStatusCode };
 };
 
 const dropUserReviewCollection = async () => {
@@ -201,9 +206,12 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
   });
 
   test("it edits a user review.", async () => {
-    const { productId, productCreateInput } = await createProductGraphQLRequest(
-      createdRequest
-    );
+    const {
+      productId,
+      productCreateInput,
+      productCreateStatusCode
+    } = await createProductGraphQLRequest(createdRequest);
+    expect(productCreateStatusCode).toBe(200);
     expect(productId).not.toBe(null);
     const {
       createReviewStatusCode,
@@ -229,5 +237,90 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
     expect((userReview as any).reviewer).toEqual((retrievedUser as any)._id);
     expect((userReview as any).product_reviewed.toString()).toEqual(productId);
     expect((userReview as any).comment).toBe(reviewEditInput.comment);
+  });
+
+  test("it edits a user review.", async () => {
+    const {
+      productId,
+      productCreateInput,
+      productCreateStatusCode
+    } = await createProductGraphQLRequest(createdRequest);
+    expect(productCreateStatusCode).toBe(200);
+    expect(productId).not.toBe(null);
+    const {
+      createReviewStatusCode,
+      createdReviewId,
+      reviewCreateInput
+    } = await createReviewGraphQLRequest(createdRequest, productId);
+    expect(createReviewStatusCode).toBe(200);
+    const {
+      updatedReviewStatusCode,
+      updatedReviewId,
+      reviewEditInput
+    } = await editReviewGraphQLRequest(createdRequest, createdReviewId);
+    const userReview = await UserReview.findById(createdReviewId).then(
+      result => result
+    );
+    const retrievedUser = await User.findOne({
+      email: "admin@gmail.com"
+    }).then(result => result);
+    expect(updatedReviewStatusCode).toBe(200);
+    expect(updatedReviewId).toBe(createdReviewId);
+    expect((userReview as any).rating).toBe(reviewEditInput.rating);
+    expect((userReview as any).comment).toBe(reviewEditInput.comment);
+    expect((userReview as any).reviewer).toEqual((retrievedUser as any)._id);
+    expect((userReview as any).product_reviewed.toString()).toEqual(productId);
+    expect((userReview as any).comment).toBe(reviewEditInput.comment);
+  });
+
+  test("it returns null if non owner of review attempts to edit.", async () => {
+    const {
+      productId,
+      productCreateInput,
+      productCreateStatusCode
+    } = await createProductGraphQLRequest(createdRequest);
+    expect(productCreateStatusCode).toBe(200);
+    expect(productId).not.toBe(null);
+
+    const {
+      createReviewStatusCode,
+      createdReviewId,
+      reviewCreateInput
+    } = await createReviewGraphQLRequest(createdRequest, productId);
+    expect(createReviewStatusCode).toBe(200);
+
+    await createUser({
+      email: "jessica@gmail.com",
+      password: "password"
+    });
+    const loginPostData = {
+      query: `mutation loginUserOp($email: String!, $password: String!) {
+                  loginUser(email: $email, password: $password) {
+                    email
+                  }
+                }`,
+      operationName: "loginUserOp",
+      variables: {
+        email: "jessica@gmail.com",
+        password: "password"
+      }
+    };
+    const loggedInResponse = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(loginPostData);
+
+    expect(loggedInResponse.statusCode).toBe(200);
+    expect(loggedInResponse.body.data.loginUser.email).toBe(
+      "jessica@gmail.com"
+    );
+
+    const {
+      updatedReviewStatusCode,
+      editReviewNullCheck
+    } = await editReviewGraphQLRequest(createdRequest, createdReviewId);
+    expect(updatedReviewStatusCode).toBe(200);
+    expect(editReviewNullCheck).toBe(null);
   });
 });
