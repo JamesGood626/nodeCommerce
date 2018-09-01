@@ -2,7 +2,7 @@ import { isUserAuthenticated, isAdmin } from "../../middlewareResolvers";
 import {
   allUserReviews,
   createReview
-  // editUserReview,
+  editReview,
   // deleteUserReview
 } from "../Services";
 
@@ -18,13 +18,27 @@ export const userReviewResolvers = {
       { input: { rating, comment, product_reviewed } },
       { req }
     ) => {
-      console.log("Create review resolver is hit: ", req.user);
       isUserAuthenticated(req.user);
       return await createReview(
         {
           rating,
           comment,
           product_reviewed
+        },
+        req.user
+      );
+    },
+    editReview: async (
+      _,
+      { input: { _id, rating, comment } },
+      { req }
+    ) => {
+      isUserAuthenticated(req.user);
+      return await editReview(
+        {
+          _id,
+          rating,
+          comment
         },
         req.user
       );

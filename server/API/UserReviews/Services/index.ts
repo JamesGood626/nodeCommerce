@@ -2,19 +2,19 @@ import { UserReview } from "../Models/userReview";
 import { User } from "../../Accounts/Models/user";
 import { Product } from "../../Products/Models/product";
 
-// const findAndUpdate = async (model, id, input) => {
-//   return await model.findByIdAndUpdate(
-//     id,
-//     { $set: input },
-//     { new: true },
-//     (err, result) => {
-//       if (err) {
-//         return console.log(err);
-//       }
-//       return result;
-//     }
-//   );
-// };
+const findAndUpdate = async (model, id, input) => {
+  return await model.findByIdAndUpdate(
+    id,
+    { $set: input },
+    { new: true },
+    (err, result) => {
+      if (err) {
+        return console.log(err);
+      }
+      return result;
+    }
+  );
+};
 
 export const allUserReviews = async () => {
   return await UserReview.find({})
@@ -48,28 +48,14 @@ export const createReview = async (input, user) => {
   (retrievedUser as any).save();
   (retrievedProduct as any).user_reviews.push(userReview._id);
   (retrievedProduct as any).save();
-  console.log("The updateduser: ", retrievedUser);
-  console.log("The retrieved product: ", retrievedProduct);
-  console.log("The created user review: ", userReview);
   return userReview;
 };
 
-// export const updateReview = async ({ reviewId, rating, comment, req }) => {
-//   const retrievedReview = await UserReview.find({ id: reviewId })
-//     .then(results => results)
-//     .catch(err =>
-//       console.log("Error retrieving user in updateReview: ", err.message)
-//     );
-//   if (retrievedReview) {
-//     retrievedReview.review = review;
-//   }
-//   if (comment) {
-//     retrievedReview.comment = comment;
-//   }
-//   retrievedReview.edited = Date.now();
-//   retrievedReview.save();
-//   return resolve(retrievedReview);
-// };
+export const editReview = async (input, user) => {
+  const { _id } = input;
+  const updatedReview = await findAndUpdate(UserReview, _id, input);
+  return updatedReview;
+};
 
 // export const deleteReview = async (reviewId, req) => {
 //   const deletedStatus = await UserReview.deleteOne({ id: reviewId })

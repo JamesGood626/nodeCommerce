@@ -3,6 +3,7 @@ import { app } from "../../../app";
 import { UserReview } from "../Models/userReview";
 import { User } from "../../Accounts/Models/user";
 // import { Product } from "../../Products/Models/product";
+import { dropProductCollection } from "../../Products/tests/product.test";
 import { createUser } from "../../../Services/auth";
 import { dropUserCollection } from "../../../Services/tests/test-helpers";
 
@@ -36,6 +37,38 @@ const createReviewGraphQLRequest = async (
   const createReviewStatusCode = createdReviewResponse.statusCode;
 
   return { createReviewStatusCode, createdReviewId, reviewCreateInput };
+};
+
+const editReviewGraphQLRequest = async (createdRequest, _id): Promise<any> => {
+  const reviewEditInput = {
+    _id,
+    rating: 2,
+    comment: "Actually, after using it more, the quality could be improved."
+  };
+  const firstPostEditData = {
+    query: `mutation editReviewOp($input: EditUserReviewInput) {
+                  editReview(input: $input) {
+                    _id
+                    rating
+                    comment
+                  }
+                }`,
+    operationName: "editReviewOp",
+    variables: {
+      input: reviewEditInput
+    }
+  };
+
+  const updatedReviewResponse = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(firstPostEditData);
+
+  const updatedReviewId = updatedReviewResponse.body.data.editReview._id;
+  const updatedReviewStatusCode = updatedReviewResponse.statusCode;
+
+  return { updatedReviewStatusCode, updatedReviewId, reviewEditInput };
 };
 
 const createProductGraphQLRequest = async (createdRequest): Promise<any> => {
@@ -73,7 +106,6 @@ const createProductGraphQLRequest = async (createdRequest): Promise<any> => {
     .send(firstPostCreateData);
 
   const productId = productCreateResponse.body.data.createProduct._id;
-
   return { productId, productCreateInput };
 };
 
@@ -122,9 +154,10 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
       .send(loginPostData);
 
     await dropUserReviewCollection();
+    await dropProductCollection();
   });
 
-  test("it creates a new user review if user is admin in.", async () => {
+  test("it creates a new user review.", async () => {
     const { productId, productCreateInput } = await createProductGraphQLRequest(
       createdRequest
     );
@@ -165,6 +198,36 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
     expect((retrievedUser as any).user_reviews[0].toString()).toBe(
       createdReviewId
     );
-    expect((userReview as any).reviewer.is_admin).toBe(true);
+  });
+
+  test("it edits a user review.", async () => {
+    const { productId, productCreateInput } = await createProductGraphQLRequest(
+      createdRequest
+    );
+    expect(productId).not.toBe(null);
+    const {
+      createReviewStatusCode,
+      createdReviewId,
+      reviewCreateInput
+    } = await createReviewGraphQLRequest(createdRequest, productId);
+    expect(createReviewStatusCode).toBe(200);
+    const {
+      updatedReviewStatusCode,
+      updatedReviewId,
+      reviewEditInput
+    } = await editReviewGraphQLRequest(createdRequest, createdReviewId);
+    const userReview = await UserReview.findById(createdReviewId).then(
+      result => result
+    );
+    const retrievedUser = await User.findOne({
+      email: "admin@gmail.com"
+    }).then(result => result);
+    expect(updatedReviewStatusCode).toBe(200);
+    expect(updatedReviewId).toBe(createdReviewId);
+    expect((userReview as any).rating).toBe(reviewEditInput.rating);
+    expect((userReview as any).comment).toBe(reviewEditInput.comment);
+    expect((userReview as any).reviewer).toEqual((retrievedUser as any)._id);
+    expect((userReview as any).product_reviewed.toString()).toEqual(productId);
+    expect((userReview as any).comment).toBe(reviewEditInput.comment);
   });
 });

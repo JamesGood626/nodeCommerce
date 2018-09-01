@@ -15,11 +15,18 @@ export const userReviewTypeDef = `
     product_reviewed: String!
   }
 
+  input EditUserReviewInput {
+    _id: String!
+    rating: Int
+    comment: String
+  }
+
   extend type Query {
     allUserReviews: [UserReview]
   }
 
   extend type Mutation {
     createReview(input: CreateUserReviewInput): UserReview
+    editReview(input: EditUserReviewInput): UserReview
   }
 `;

@@ -9,7 +9,7 @@ import { dropUserCollection } from "../../../Services/tests/test-helpers";
 // Last left off trying to figure out why the admin user created and logged in
 // in the before each is creating the product, but I get an error when it's time to edit.
 // Need to see if response is 200, and if perhaps the session timeout is set too short.
-const dropProductCollection = async () => {
+export const dropProductCollection = async () => {
   await Product.remove({}, err =>
     console.log("Product Collection Drop Error: ", err)
   );
