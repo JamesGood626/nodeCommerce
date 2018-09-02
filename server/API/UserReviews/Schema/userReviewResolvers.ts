@@ -1,9 +1,9 @@
 import { isUserAuthenticated, isAdmin } from "../../middlewareResolvers";
 import {
   allUserReviews,
-  createReview
-  editReview,
-  // deleteUserReview
+  createReview,
+  editReview
+  deleteReview
 } from "../Services";
 
 export const userReviewResolvers = {
@@ -28,17 +28,22 @@ export const userReviewResolvers = {
         req.user
       );
     },
-    editReview: async (
-      _,
-      { input: { _id, rating, comment } },
-      { req }
-    ) => {
+    editReview: async (_, { input: { _id, rating, comment } }, { req }) => {
       isUserAuthenticated(req.user);
       return await editReview(
         {
           _id,
           rating,
           comment
+        },
+        req.user
+      );
+    },
+    deleteReview: async (_, { input: { _id } }, { req }) => {
+      isUserAuthenticated(req.user);
+      return await deleteReview(
+        {
+          _id
         },
         req.user
       );

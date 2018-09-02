@@ -21,6 +21,10 @@ export const userReviewTypeDef = `
     comment: String
   }
 
+  input DeleteUserReviewInput {
+    _id: String!
+  }
+
   extend type Query {
     allUserReviews: [UserReview]
   }
@@ -28,5 +32,6 @@ export const userReviewTypeDef = `
   extend type Mutation {
     createReview(input: CreateUserReviewInput): UserReview
     editReview(input: EditUserReviewInput): UserReview
+    deleteReview(input: DeleteUserReviewInput): Boolean
   }
 `;

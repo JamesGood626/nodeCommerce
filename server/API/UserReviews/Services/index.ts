@@ -53,9 +53,7 @@ export const createReview = async (input, user) => {
 export const editReview = async (input, user) => {
   const { _id } = input;
   const userReviewIsOwn = user.user_reviews.filter(review => {
-    if (review.toString() === _id) {
-      return true;
-    }
+    return review.toString() === _id ? true : false;
   });
   if (userReviewIsOwn.length > 0) {
     const updatedReview = await findAndUpdate(UserReview, _id, input);
@@ -64,11 +62,17 @@ export const editReview = async (input, user) => {
   return null;
 };
 
-// export const deleteReview = async (reviewId, req) => {
-//   const deletedStatus = await UserReview.deleteOne({ id: reviewId })
-//     .then(deleted => console.log("This is deleted: ", deleted))
-//     .catch(err =>
-//       console.log("Error deleting user in deleteReview: ", err.message)
-//     );
-//   return true;
-// };
+export const deleteReview = async ({ _id }, user) => {
+  const userReviewIsOwn = user.user_reviews.filter(review => {
+    return review.toString() === _id ? true : false;
+  });
+  if (userReviewIsOwn.length > 0) {
+    const reviewDeleted = await UserReview.findById(_id).then(result => {
+      if (result) {
+        return result.remove();
+      }
+    });
+    return reviewDeleted as any;
+  }
+  return null;
+};

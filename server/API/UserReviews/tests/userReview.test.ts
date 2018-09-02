@@ -7,6 +7,28 @@ import { dropProductCollection } from "../../Products/tests/product.test";
 import { createUser } from "../../../Services/auth";
 import { dropUserCollection } from "../../../Services/tests/test-helpers";
 
+const allUserReviewsGraphQLRequest = async (createdRequest): Promise<any> => {
+  const firstPostEditData = {
+    query: `query allUserReviewsOp {
+                  allUserReviews {
+                    _id
+                    rating
+                  }
+                }`,
+    operationName: "allUserReviewsOp"
+  };
+
+  const allUserReviewsResponse = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(firstPostEditData);
+
+  const allUserReviewsStatusCode = allUserReviewsResponse.statusCode;
+  const { allUserReviews } = allUserReviewsResponse.body.data;
+  return { allUserReviewsStatusCode, allUserReviews };
+};
+
 const createReviewGraphQLRequest = async (
   createdRequest,
   productId
@@ -72,6 +94,39 @@ const editReviewGraphQLRequest = async (createdRequest, _id): Promise<any> => {
     return { updatedReviewStatusCode, updatedReviewId, reviewEditInput };
   } else {
     return { updatedReviewStatusCode, editReviewNullCheck };
+  }
+};
+
+const deleteReviewGraphQLRequest = async (
+  createdRequest,
+  _id
+): Promise<any> => {
+  const reviewDeleteInput = {
+    _id
+  };
+  const firstPostEditData = {
+    query: `mutation deleteReviewOp($input: DeleteUserReviewInput) {
+                  deleteReview(input: $input)
+                }`,
+    operationName: "deleteReviewOp",
+    variables: {
+      input: reviewDeleteInput
+    }
+  };
+
+  const deletedReviewResponse = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(firstPostEditData);
+
+  const deletedReviewStatusCode = deletedReviewResponse.statusCode;
+  const deletedReviewNullCheck = deletedReviewResponse.body.data.deleteReview;
+  if (deletedReviewNullCheck) {
+    const { deleteReview } = deletedReviewResponse.body.data;
+    return { deletedReviewStatusCode, deleteReview };
+  } else {
+    return { deletedReviewStatusCode, deletedReviewNullCheck };
   }
 };
 
@@ -163,6 +218,30 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
   });
 
   test("it creates a new user review.", async () => {
+    const { productId, productCreateInput } = await createProductGraphQLRequest(
+      createdRequest
+    );
+    expect(productId).not.toBe(null);
+    const firstReviewCreation = await createReviewGraphQLRequest(
+      createdRequest,
+      productId
+    );
+    const secondReviewCreation = await createReviewGraphQLRequest(
+      createdRequest,
+      productId
+    );
+    expect(firstReviewCreation.createReviewStatusCode).toBe(200);
+    expect(secondReviewCreation.createReviewStatusCode).toBe(200);
+
+    const {
+      allUserReviewsStatusCode,
+      allUserReviews
+    } = await allUserReviewsGraphQLRequest(createdRequest);
+    expect(allUserReviewsStatusCode).toBe(200);
+    expect(allUserReviews.length).toBe(2);
+  });
+
+  test("it retrieves all user reviews.", async () => {
     const { productId, productCreateInput } = await createProductGraphQLRequest(
       createdRequest
     );
@@ -322,5 +401,94 @@ describe("Test user review CRUD Operations via GraphQL queries and mutations", (
     } = await editReviewGraphQLRequest(createdRequest, createdReviewId);
     expect(updatedReviewStatusCode).toBe(200);
     expect(editReviewNullCheck).toBe(null);
+  });
+
+  test("it deletes user review.", async () => {
+    const {
+      productId,
+      productCreateInput,
+      productCreateStatusCode
+    } = await createProductGraphQLRequest(createdRequest);
+    expect(productCreateStatusCode).toBe(200);
+    expect(productId).not.toBe(null);
+
+    const {
+      createReviewStatusCode,
+      createdReviewId,
+      reviewCreateInput
+    } = await createReviewGraphQLRequest(createdRequest, productId);
+    expect(createReviewStatusCode).toBe(200);
+
+    const {
+      deletedReviewStatusCode,
+      deleteReview
+    } = await deleteReviewGraphQLRequest(createdRequest, createdReviewId);
+    expect(deletedReviewStatusCode).toBe(200);
+    expect(deleteReview).toBe(true);
+
+    const {
+      allUserReviewsStatusCode,
+      allUserReviews
+    } = await allUserReviewsGraphQLRequest(createdRequest);
+    expect(allUserReviewsStatusCode).toBe(200);
+    expect(allUserReviews.length).toBe(0);
+  });
+
+  test("it prevents user review deletion if user is not owner.", async () => {
+    const {
+      productId,
+      productCreateInput,
+      productCreateStatusCode
+    } = await createProductGraphQLRequest(createdRequest);
+    expect(productCreateStatusCode).toBe(200);
+    expect(productId).not.toBe(null);
+
+    const {
+      createReviewStatusCode,
+      createdReviewId,
+      reviewCreateInput
+    } = await createReviewGraphQLRequest(createdRequest, productId);
+    expect(createReviewStatusCode).toBe(200);
+
+    await createUser({
+      email: "jessica@gmail.com",
+      password: "password"
+    });
+    const loginPostData = {
+      query: `mutation loginUserOp($email: String!, $password: String!) {
+                  loginUser(email: $email, password: $password) {
+                    email
+                  }
+                }`,
+      operationName: "loginUserOp",
+      variables: {
+        email: "jessica@gmail.com",
+        password: "password"
+      }
+    };
+    const loggedInResponse = await createdRequest
+      .post("/graphql")
+      .set("Accept", "application/json")
+      .type("form")
+      .send(loginPostData);
+
+    expect(loggedInResponse.statusCode).toBe(200);
+    expect(loggedInResponse.body.data.loginUser.email).toBe(
+      "jessica@gmail.com"
+    );
+
+    const {
+      deletedReviewStatusCode,
+      deletedReviewNullCheck
+    } = await deleteReviewGraphQLRequest(createdRequest, createdReviewId);
+    expect(deletedReviewStatusCode).toBe(200);
+    expect(deletedReviewNullCheck).toBe(null);
+
+    const {
+      allUserReviewsStatusCode,
+      allUserReviews
+    } = await allUserReviewsGraphQLRequest(createdRequest);
+    expect(allUserReviewsStatusCode).toBe(200);
+    expect(allUserReviews.length).toBe(1);
   });
 });
