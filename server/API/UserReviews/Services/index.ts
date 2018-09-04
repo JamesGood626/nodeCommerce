@@ -24,10 +24,6 @@ export const allUserReviews = async () => {
     );
 };
 
-// Whenever a review is created. Will need to get that Product by id
-// so that I may push the new review to it's array which references.
-// user reviews.
-
 export const createReview = async (input, user) => {
   const { product_reviewed } = input;
   const creationDate = Date.now();

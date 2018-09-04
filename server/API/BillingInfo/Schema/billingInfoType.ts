@@ -5,7 +5,7 @@ export const billingInfoTypeDef = gql`
     street_address: String!
     city: String!
     state: String!
-    zip: String!
+    zip_code: String!
     apartment: String
     country: String!
   }
@@ -14,7 +14,7 @@ export const billingInfoTypeDef = gql`
     street_address: String!
     city: String!
     state: String!
-    zip: String!
+    zip_code: String!
     apartment: String
     country: String!
   }

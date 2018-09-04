@@ -61,9 +61,9 @@ const createReviewGraphQLRequest = async (
   return { createReviewStatusCode, createdReviewId, reviewCreateInput };
 };
 
-const editReviewGraphQLRequest = async (createdRequest, _id): Promise<any> => {
+const editReviewGraphQLRequest = async (createdRequest, reviewId): Promise<any> => {
   const reviewEditInput = {
-    _id,
+    _id: reviewId,
     rating: 2,
     comment: "Actually, after using it more, the quality could be improved."
   };
@@ -99,10 +99,10 @@ const editReviewGraphQLRequest = async (createdRequest, _id): Promise<any> => {
 
 const deleteReviewGraphQLRequest = async (
   createdRequest,
-  _id
+  reviewId
 ): Promise<any> => {
   const reviewDeleteInput = {
-    _id
+    _id: reviewId
   };
   const firstPostEditData = {
     query: `mutation deleteReviewOp($input: DeleteUserReviewInput) {

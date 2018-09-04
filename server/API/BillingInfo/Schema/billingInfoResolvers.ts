@@ -16,23 +16,23 @@ export const billingInfoResolvers = {
   Mutation: {
     createBillingInfo: async (
       _,
-      { input: { street_address, apartment, city, state, zip, country } },
+      { input: { street_address, apartment, city, state, zip_code, country } },
       { req }
     ) => {
       isUserAuthenticated(req.user);
       return await createBillingInfo(
-        { street_address, apartment, city, state, zip, country },
+        { street_address, apartment, city, state, zip_code, country },
         req.user
       );
     },
     editBillingInfo: async (
       _,
-      { input: { street_address, apartment, city, state, zip, country } },
+      { input: { street_address, apartment, city, state, zip_code, country } },
       { req }
     ) => {
       isUserAuthenticated(req.user);
       return await editBillingInfo(
-        { street_address, apartment, city, state, zip, country },
+        { street_address, apartment, city, state, zip_code, country },
         req.user
       );
     },

@@ -4,7 +4,7 @@ export interface IBillingInfo {
   street_address: string;
   city: string;
   state: string;
-  zip: string;
+  zip_code: string;
   apartment?: string;
   country: string;
 }
@@ -22,7 +22,7 @@ export const billingInfoSchema = new Schema({
   state: {
     type: String
   },
-  zip: {
+  zip_code: {
     type: String
   },
   country: {

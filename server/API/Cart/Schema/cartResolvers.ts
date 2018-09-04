@@ -1,6 +1,8 @@
+import { Schema } from "mongoose";
 import {
-  createCart
-  // editBillingInfo,
+  createCart,
+  editCart,
+  retrieveProductsList
   // deleteBillingInfo
 } from "../Services";
 
@@ -13,26 +15,45 @@ export const cartResolvers = {
     }
   },
   Mutation: {
+    // removed discount option for now.
     createCart: async (
       _,
-      {
-        input: {
-          total_price_amount,
-          products,
-          discount,
-          total_price_with_discount
-        }
-      },
+      { input: { product_id, price, quantity, sale_price } },
       { req }
     ) => {
-      console.log("in create cart resolver: ", products);
       return await createCart(
-        { total_price_amount, products, discount, total_price_with_discount },
+        { product_id, price, quantity, sale_price },
+        req.user
+      );
+    },
+    editCart: async (
+      _,
+      { input: { product_id, price, quantity, sale_price } },
+      { req }
+    ) => {
+      return await editCart(
+        { product_id, price, quantity, sale_price },
         req.user
       );
     }
+  },
+  Cart: {
+    products: async (obj, __, { req }) => {
+      // obj will the be returned value from any of the queries/mutations that will
+      // be accessible in here whenever the products field is a requested return value
+      // on the query/mutation.
+      return await retrieveProductsList(obj.products);
+    }
   }
 };
+
+// Example obj that's available in the products resolver.
+// { products: [ 5b8d81358d9dc6bd50f91fc5, 5b8d81358d9dc6bd50f91fc6 ],
+//   _id: 5b8d81368d9dc6bd50f91fc9,
+//   total_price_amount: 79.94,
+//   quantity:
+//    { '5b8d81358d9dc6bd50f91fc5': 2, '5b8d81358d9dc6bd50f91fc6': 4 }
+// }
 
 //     editBillingInfo: (
 //       _,

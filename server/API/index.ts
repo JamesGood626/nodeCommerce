@@ -15,6 +15,10 @@ import {
   dateScalarSchema,
   dateScalarResolver
 } from "./CustomScalars/customDateScalarType";
+import {
+  rawScalarSchema,
+  rawScalarResolver
+} from "./CustomScalars/customRawScalarType";
 
 const typeDef = gql`
   type Query {
@@ -34,7 +38,8 @@ export const typeDefs: any = [
   orderTypeDef,
   productTypeDef,
   userReviewTypeDef,
-  dateScalarSchema
+  dateScalarSchema,
+  rawScalarSchema
 ];
 
 export const resolvers: any = [
@@ -44,7 +49,8 @@ export const resolvers: any = [
   orderResolvers,
   productResolvers,
   userReviewResolvers,
-  dateScalarResolver
+  dateScalarResolver,
+  rawScalarResolver
 ];
 
 // The V1 Apollo Server way

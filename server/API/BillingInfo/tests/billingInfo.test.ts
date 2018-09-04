@@ -55,7 +55,7 @@ describe("Test billing info CRUD Operations via GraphQL queries and mutations", 
           street_address: "18350 N 32nd st",
           city: "town",
           state: "CO",
-          zip: "00000",
+          zip_code: "00000",
           country: "mars"
         }
       }
@@ -101,7 +101,7 @@ describe("Test billing info CRUD Operations via GraphQL queries and mutations", 
           street_address: "18350 N 32nd st",
           city: "town",
           state: "CO",
-          zip: "00000",
+          zip_code: "00000",
           country: "mars"
         }
       }
@@ -133,7 +133,7 @@ describe("Test billing info CRUD Operations via GraphQL queries and mutations", 
           street_address: "2971 75th ave",
           city: "wootville",
           state: "CA",
-          zip: "99999",
+          zip_code: "99999",
           country: "pluto"
         }
       }
@@ -170,7 +170,7 @@ describe("Test billing info CRUD Operations via GraphQL queries and mutations", 
           street_address: "18350 N 32nd st",
           city: "town",
           state: "CO",
-          zip: "00000",
+          zip_code: "00000",
           country: "mars"
         }
       }
