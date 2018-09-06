@@ -2,6 +2,7 @@ import { Schema } from "mongoose";
 import {
   createCart,
   editCart,
+  removeProduct,
   retrieveProductsList
   // deleteBillingInfo
 } from "../Services";
@@ -35,6 +36,9 @@ export const cartResolvers = {
         { product_id, price, quantity, sale_price },
         req.user
       );
+    },
+    removeProduct: async (_, { input: { product_id, price } }, { req }) => {
+      return await removeProduct({ product_id, price }, req.user);
     }
   },
   Cart: {
@@ -42,6 +46,7 @@ export const cartResolvers = {
       // obj will the be returned value from any of the queries/mutations that will
       // be accessible in here whenever the products field is a requested return value
       // on the query/mutation.
+      console.log("obj.products: ", obj.products);
       return await retrieveProductsList(obj.products);
     }
   }

@@ -44,7 +44,7 @@ export const initRedisSessionStore = (app: any) => {
       secret: REDIS_SECRET,
       saveUninitialized: false,
       // option for cookie { secure: true } in prod
-      cookie: { maxAge: 12000 },
+      cookie: { maxAge: 22000 },
       // look into whether store makes use of a 'touch' method
       // express-session docs claim there could be potential race conditions
       resave: false

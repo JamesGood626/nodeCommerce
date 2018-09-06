@@ -56,7 +56,7 @@ const createCartGraphQLRequest = async (createdRequest, args): Promise<any> => {
     .type("form")
     .send(firstPostCreateData);
   const createCartStatusCode = createdCartResponse.statusCode;
-  const createCartData = createdCartResponse.body.data.createCart
+  const createCartData = createdCartResponse.body.data.createCart;
   return { createCartStatusCode, cartCreateInput, createCartData };
 };
 
@@ -93,6 +93,39 @@ const editCartGraphQLRequest = async (createdRequest, args): Promise<any> => {
   const editCartData = editedCartResponse.body.data.editCart;
   const editCartStatusCode = editedCartResponse.statusCode;
   return { editCartStatusCode, cartEditInput, editCartData };
+};
+
+const removeProductGraphQLRequest = async (createdRequest, args) => {
+  const postData = {
+    query: `mutation removeProductOp($input: RemoveProductInput) {
+                  removeProduct(input: $input) {
+                    cart {
+                      quantity
+                      total_price_amount
+                      products {
+                        _id
+                      }
+                    }
+                  }
+                }`,
+    operationName: "removeProductOp",
+    variables: {
+      input: {
+        product_id: args.productId,
+        price: args.price
+      }
+    }
+  };
+
+  const removeProductResponse = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(postData);
+
+  const removeProductStatucCode = removeProductResponse.statusCode;
+  const removeProductData = removeProductResponse.body.data.removeProduct;
+  return { removeProductStatucCode, removeProductData };
 };
 
 const createProductGraphQLRequest = async (
@@ -134,7 +167,7 @@ const createProductGraphQLRequest = async (
 describe("Test cart CRUD Operations via GraphQL queries and mutations", () => {
   let createdRequest;
   let server;
-  const productIdArr: IProductCreated[] = [];
+  let productIdArr: IProductCreated[] = [];
 
   beforeAll(async done => {
     server = await app.listen(done);
@@ -142,6 +175,7 @@ describe("Test cart CRUD Operations via GraphQL queries and mutations", () => {
   });
 
   beforeEach(async () => {
+    productIdArr = [];
     await dropUserCollection();
     await dropProductCollection();
     await createUser({
@@ -184,7 +218,7 @@ describe("Test cart CRUD Operations via GraphQL queries and mutations", () => {
     );
     productIdArr.push(productOne);
     productIdArr.push(productTwo);
-    productIdArr.push(productThree;
+    productIdArr.push(productThree);
 
     await createUser({
       email: "jessica@gmail.com",
@@ -214,30 +248,95 @@ describe("Test cart CRUD Operations via GraphQL queries and mutations", () => {
     await dropProductCollection();
   });
 
-  test("it creates a new cart and can add subsequent products.", async () => {
-    const { createCartStatusCode, cartCreateInput, createCartData } = await createCartGraphQLRequest(createdRequest, {
+  test("it creates a new cart and can add subsequent products", async () => {
+    const {
+      createCartStatusCode,
+      cartCreateInput,
+      createCartData
+    } = await createCartGraphQLRequest(createdRequest, {
       productId: productIdArr[0].productId,
       price: productIdArr[0].productPrice,
       quantity: 2
     });
-    const firstExpectedTotalPrice = cartCreateInput.quantity * cartCreateInput.price
+    const firstExpectedTotalPrice =
+      cartCreateInput.quantity * cartCreateInput.price;
     expect(createCartStatusCode).toBe(200);
-    expect(createCartData.cart.total_price_amount).toBe(firstExpectedTotalPrice);
+    expect(createCartData.cart.total_price_amount).toBe(
+      firstExpectedTotalPrice
+    );
     expect(createCartData.cart.quantity[cartCreateInput.product_id]).toBe(2);
     expect(createCartData.cart.products.length).toBe(1);
-    expect(createCartData.cart.products[0]._id).toBe(cartCreateInput.product_id);
+    expect(createCartData.cart.products[0]._id).toBe(
+      cartCreateInput.product_id
+    );
 
-    const { editCartStatusCode, cartEditInput, editCartData } = await editCartGraphQLRequest(createdRequest, {
+    const {
+      editCartStatusCode,
+      cartEditInput,
+      editCartData
+    } = await editCartGraphQLRequest(createdRequest, {
       productId: productIdArr[1].productId,
       price: productIdArr[1].productPrice,
       quantity: 4
     });
-    const secondExpectedTotalPrice = cartEditInput.quantity * cartEditInput.price
+    const secondExpectedTotalPrice =
+      cartEditInput.quantity * cartEditInput.price;
     expect(editCartStatusCode).toBe(200);
-    expect(editCartData.cart.total_price_amount).toBe(firstExpectedTotalPrice + secondExpectedTotalPrice);
+    expect(editCartData.cart.total_price_amount).toBe(
+      firstExpectedTotalPrice + secondExpectedTotalPrice
+    );
     expect(editCartData.cart.quantity[cartEditInput.product_id]).toBe(4);
     expect(editCartData.cart.products.length).toBe(2);
     expect(editCartData.cart.products[0]._id).toBe(cartCreateInput.product_id);
     expect(editCartData.cart.products[1]._id).toBe(cartEditInput.product_id);
+  });
+
+  test("it removes products from cart", async () => {
+    const firstProductQuantity = 2;
+    const {
+      createCartStatusCode,
+      cartCreateInput,
+      createCartData
+    } = await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[0].productId,
+      price: productIdArr[0].productPrice,
+      quantity: firstProductQuantity
+    });
+    expect(createCartStatusCode).toBe(200);
+
+    const {
+      editCartStatusCode,
+      cartEditInput,
+      editCartData
+    } = await editCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[1].productId,
+      price: productIdArr[1].productPrice,
+      quantity: 4
+    });
+    expect(editCartStatusCode).toBe(200);
+    expect(editCartData.cart.quantity[cartEditInput.product_id]).toBe(4);
+
+    const {
+      removeProductStatucCode,
+      removeProductData
+    } = await removeProductGraphQLRequest(createdRequest, {
+      productId: productIdArr[0].productId,
+      price: productIdArr[0].productPrice
+    });
+    expect(removeProductStatucCode).toBe(200);
+    const totalPriceAmountWithTwoProducts =
+      editCartData.cart.total_price_amount;
+    const subtractedFirstProductPrice =
+      firstProductQuantity * productIdArr[0].productPrice;
+    const subtractionResult =
+      totalPriceAmountWithTwoProducts - subtractedFirstProductPrice;
+    expect(removeProductData.cart.total_price_amount).toBe(subtractionResult);
+    expect(removeProductData.cart.products.length).toBe(1);
+    expect(removeProductData.cart.products[0]._id).toBe(
+      productIdArr[1].productId
+    );
+    const keys = Object.keys(removeProductData.cart.quantity);
+    expect(keys.length).toBe(1);
+    expect(removeProductData.cart.quantity[productIdArr[1].productId]).toBe(4);
   });
 });

@@ -63,7 +63,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     await server.close(done);
   });
 
-  test("GraphQL Mutation successfully retrieves all products.", async done => {
+  test("GraphQL Mutation successfully retrieves all products", async done => {
     expect.assertions(14);
     // for verifying a correct date instance on the client.
     // date instanceof Date && !isNan(date.getTime())
@@ -172,7 +172,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
-  test("GraphQL Mutation allows new product to be created if user is admin.", async done => {
+  test("GraphQL Mutation allows new product to be created if user is admin", async done => {
     expect.assertions(9);
     // for verifying a correct date instance on the client.
     // date instanceof Date && !isNan(date.getTime())
@@ -248,7 +248,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
-  test("GraphQL Mutation prevents product from being created if user isn't admin.", async done => {
+  test("GraphQL Mutation prevents product from being created if user isn't admin", async done => {
     expect.assertions(7);
     const mutationCreateInput = {
       product_title: "Planet",
@@ -344,7 +344,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
-  test("GraphQL Mutation prevents product from being edited if user isn't admin.", async done => {
+  test("GraphQL Mutation prevents product from being edited if user isn't admin", async done => {
     expect.assertions(6);
     const mutationCreateInput = {
       product_title: "Planet",
@@ -444,7 +444,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
-  test("GraphQL Mutation allows product to be edited if user is admin.", async done => {
+  test("GraphQL Mutation allows product to be edited if user is admin", async done => {
     expect.assertions(7);
     const mutationCreateInput = {
       product_title: "Planet",
@@ -525,7 +525,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
-  test("GraphQL Mutation successfully prevents product deletion if not admin.", async done => {
+  test("GraphQL Mutation successfully prevents product deletion if not admin", async done => {
     expect.assertions(8);
     const mutationCreateInput = {
       product_title: "Planet",
@@ -637,7 +637,7 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     done();
   });
 
-  test("GraphQL Mutation allows product deletion if user is admin.", async done => {
+  test("GraphQL Mutation allows product deletion if user is admin", async done => {
     expect.assertions(5);
     const mutationCreateInput = {
       product_title: "Planet",

@@ -38,7 +38,7 @@ describe("Test billing info CRUD Operations via GraphQL queries and mutations", 
     await server.close(done);
   });
 
-  test("GraphQL Mutation successfully creates new billing info.", async done => {
+  test("GraphQL Mutation successfully creates new billing info", async done => {
     expect.assertions(4);
 
     const postData = {
@@ -85,7 +85,7 @@ describe("Test billing info CRUD Operations via GraphQL queries and mutations", 
     //  country: 'mars' } }
   });
 
-  test("GraphQL Mutation successfully edits new billing info.", async done => {
+  test("GraphQL Mutation successfully edits new billing info", async done => {
     expect.assertions(8);
     const createBillingInfoPostData = {
       query: `mutation createBillingInfoOp($input: BillingInfoInput) {
@@ -153,7 +153,7 @@ describe("Test billing info CRUD Operations via GraphQL queries and mutations", 
     done();
   });
 
-  test("GraphQL Mutation successfully deletes billing info.", async done => {
+  test("GraphQL Mutation successfully deletes billing info", async done => {
     expect.assertions(6);
 
     const createBillingInfoPostData = {

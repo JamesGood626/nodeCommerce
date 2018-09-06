@@ -2,6 +2,7 @@ import { gql } from "apollo-server-express";
 
 export const cartTypeDef = gql`
   type Cart {
+    _id: String!
     total_price_amount: Float!
     products: [Product!]!
     quantity: Raw!
@@ -14,6 +15,11 @@ export const cartTypeDef = gql`
     sale_price: Float
   }
 
+  input RemoveProductInput {
+    product_id: String!
+    price: Float!
+  }
+
   extend type Query {
     allCarts: [Cart]
   }
@@ -21,6 +27,7 @@ export const cartTypeDef = gql`
   extend type Mutation {
     createCart(input: CartInput): User
     editCart(input: CartInput): User
+    removeProduct(input: RemoveProductInput): User
   }
 `;
 
