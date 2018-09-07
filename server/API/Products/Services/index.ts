@@ -3,9 +3,7 @@ import { User } from "../../Accounts/Models/user";
 import { Product, IProduct, IProductModel } from "../Models/product";
 
 export const getAllProducts = async () => {
-  const allProducts: IProductModel[] = await Product.find({}).then(
-    result => result
-  );
+  const allProducts: IProductModel[] = await Product.find({});
   return allProducts;
 };
 
