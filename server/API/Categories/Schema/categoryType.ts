@@ -20,6 +20,6 @@ export const categoryTypeDef = gql`
 
   extend type Mutation {
     createCategory(input: CreateCategoryInput): Category
-    deleteCategory(input: DeleteCategoryInput): Category
+    deleteCategory(input: DeleteCategoryInput): Boolean
   }
 `;

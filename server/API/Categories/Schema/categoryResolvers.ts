@@ -8,13 +8,13 @@ export const categoryResolvers = {
     }
   },
   Mutation: {
-    createCategory: async (_, { category_type }, { req }) => {
+    createCategory: async (_, { input: { category_type } }, { req }) => {
       isAdmin(req.user);
       return await createCategory({ category_type });
     },
-    deleteCategory: async (_, { _id }, { req }) => {
+    deleteCategory: async (_, { input: { _id } }, { req }) => {
       isAdmin(req.user);
-      return await deleteCategory(_id);
+      return await deleteCategory({ _id });
     }
   }
 };

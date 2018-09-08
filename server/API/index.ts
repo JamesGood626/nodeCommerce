@@ -7,6 +7,8 @@ import { cartTypeDef } from "./Cart/Schema/cartType";
 import { cartResolvers } from "./Cart/Schema/cartResolvers";
 import { orderTypeDef } from "./Orders/Schema/orderType";
 import { orderResolvers } from "./Orders/Schema/orderResolvers";
+import { categoryTypeDef } from "./Categories/Schema/CategoryType";
+import { categoryResolvers } from "./Categories/Schema/CategoryResolvers";
 import { productTypeDef } from "./Products/Schema/productType";
 import { productResolvers } from "./Products/Schema/productResolvers";
 import { userReviewTypeDef } from "./UserReviews/Schema/userReviewType";
@@ -36,6 +38,7 @@ export const typeDefs: any = [
   billingInfoTypeDef,
   cartTypeDef,
   orderTypeDef,
+  categoryTypeDef,
   productTypeDef,
   userReviewTypeDef,
   dateScalarSchema,
@@ -48,6 +51,7 @@ export const resolvers: any = [
   cartResolvers,
   orderResolvers,
   productResolvers,
+  categoryResolvers,
   userReviewResolvers,
   dateScalarResolver,
   rawScalarResolver

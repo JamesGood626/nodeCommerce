@@ -3,9 +3,9 @@ import { app } from "../../../app";
 import { UserReview } from "../Models/userReview";
 import { User } from "../../Accounts/Models/user";
 // import { Product } from "../../Products/Models/product";
-import { dropProductCollection } from "../../Products/tests/product.test";
+import { dropProductCollection } from "../../Products/__tests__/product.test";
 import { createUser } from "../../../Services/auth";
-import { dropUserCollection } from "../../../Services/tests/test-helpers";
+import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
 
 const allUserReviewsGraphQLRequest = async (createdRequest): Promise<any> => {
   const firstPostEditData = {
@@ -61,7 +61,10 @@ const createReviewGraphQLRequest = async (
   return { createReviewStatusCode, createdReviewId, reviewCreateInput };
 };
 
-const editReviewGraphQLRequest = async (createdRequest, reviewId): Promise<any> => {
+const editReviewGraphQLRequest = async (
+  createdRequest,
+  reviewId
+): Promise<any> => {
   const reviewEditInput = {
     _id: reviewId,
     rating: 2,

@@ -2,7 +2,7 @@ import * as request from "supertest";
 import { app } from "../../../app";
 import { Product } from "../Models/product";
 import { createUser } from "../../../Services/auth";
-import { dropUserCollection } from "../../../Services/tests/test-helpers";
+import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
 
 // TODO: add userReviews to the edit product test
 
