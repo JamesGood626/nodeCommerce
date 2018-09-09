@@ -20,12 +20,15 @@ import { String } from "../../../node_modules/aws-sdk/clients/sqs";
 // Delete cart when it's empty (this will only be executed on removal of last item
 // not a distinct post request)
 
-interface IProductCreated {
+export interface IProductCreated {
   productId: string;
   productPrice: number;
 }
 
-const createCartGraphQLRequest = async (createdRequest, args): Promise<any> => {
+export const createCartGraphQLRequest = async (
+  createdRequest,
+  args
+): Promise<any> => {
   const cartCreateInput = {
     product_id: args.productId,
     price: args.price,
@@ -60,7 +63,10 @@ const createCartGraphQLRequest = async (createdRequest, args): Promise<any> => {
   return { createCartStatusCode, cartCreateInput, createCartData };
 };
 
-const editCartGraphQLRequest = async (createdRequest, args): Promise<any> => {
+export const editCartGraphQLRequest = async (
+  createdRequest,
+  args
+): Promise<any> => {
   const cartEditInput = {
     product_id: args.productId,
     price: args.price,
@@ -128,7 +134,7 @@ const removeProductGraphQLRequest = async (createdRequest, args) => {
   return { removeProductStatucCode, removeProductData };
 };
 
-const createProductGraphQLRequest = async (
+export const createProductGraphQLRequest = async (
   createdRequest,
   price,
   images

@@ -9,24 +9,6 @@ export interface ICart {
   total_price_with_discount: number;
 }
 
-// IQuantity[]
-
-// interface IQuantity {
-//   product_id: string;
-//   quantity: number;
-// }
-
-// const quantitySchema = new Schema({
-//   product_id: {
-//     type: String,
-//     required: true
-//   },
-//   quantity: {
-//     type: Number,
-//     required: true
-//   }
-// });
-
 export const cartSchema = new Schema({
   total_price_amount: {
     type: Number,

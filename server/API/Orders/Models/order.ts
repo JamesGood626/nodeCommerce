@@ -53,11 +53,11 @@ export const orderSchema = new Schema({
     ref: "User"
   },
   total_amount: {
-    type: String,
+    type: Number,
     required: true
   },
   after_tax_amount: {
-    type: String,
+    type: Number,
     required: true
   },
   shipping_cost: {
@@ -72,7 +72,10 @@ export const orderSchema = new Schema({
       type: Schema.Types.ObjectId,
       ref: "Product"
     }
-  ]
+  ],
+  quantity: {
+    type: Schema.Types.Mixed
+  }
 });
 
 export const Order: Model<IOrderModel> = model<IOrderModel>(

@@ -23,6 +23,7 @@ export const orderTypeDef = gql`
     shipping_cost: String!
     shipping_address: Address!
     products: [Product!]!
+    quantity: Raw!
   }
 
   input AddressInput {
@@ -43,16 +44,24 @@ export const orderTypeDef = gql`
     country: String
   }
 
-  input OrderInput {
-    shipping_cost: String!
+  input UsersOrdersSearchInput {
+    user_id: String!
+  }
+
+  input OrderWithUsersBillingInfoInput {
+    cart_id: String!
+  }
+
+  input OrderWithShippingAddressInput {
+    cart_id: String!
     shipping_address: AddressInput!
-    products: [ProductInput!]!
   }
 
   input EditOrderInput {
-    shipping_cost: String
+    order_id: String!
     shipping_address: AddressEditInput
     products: [ProductInput]
+    quantity: Raw
   }
 
   input DeleteOrderInput {
@@ -62,10 +71,14 @@ export const orderTypeDef = gql`
   extend type Query {
     allOrders: [Order]
     allUserOrders: [Order]
+    adminGetAllUserOrders(input: UsersOrdersSearchInput): [Order]
   }
 
   extend type Mutation {
-    createOrder(input: OrderInput): Order
+    createOrderWithUsersBillingInfo: Order
+    createOrderWithShippingAddressInput(
+      input: OrderWithShippingAddressInput
+    ): Order
     editOrder(input: EditOrderInput): Order
     deleteOrder(input: DeleteOrderInput): Boolean
   }
