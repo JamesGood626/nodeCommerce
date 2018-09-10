@@ -42,12 +42,11 @@ export const cartResolvers = {
     }
   },
   Cart: {
-    products: async (obj, __, { req }) => {
-      // obj will the be returned value from any of the queries/mutations that will
+    products: async (parentValue, __, { req }) => {
+      // parentValue will the be returned value from any of the queries/mutations that will
       // be accessible in here whenever the products field is a requested return value
       // on the query/mutation.
-      console.log("obj.products: ", obj.products);
-      return await retrieveProductsList(obj.products);
+      return await retrieveProductsList(parentValue.products);
     }
   }
 };

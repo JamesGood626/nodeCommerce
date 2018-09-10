@@ -4,7 +4,7 @@ import {
   allUserOrders,
   adminGetAllUserOrders,
   createOrderWithUsersBillingInfo,
-  createOrderWithShippingAddressInput,
+  createOrderWithShippingAddress,
   editOrder,
   deleteOrder
 } from "../Services";
@@ -30,20 +30,9 @@ export const orderResolvers = {
       isUserAuthenticated(req.user);
       return await createOrderWithUsersBillingInfo(req.user);
     },
-    createOrderWithShippingAddressInput: async (
-      _,
-      { input: { cart_id, shipping_address } },
-      { req }
-    ) => {
-      // Maybe allow a guest checkout?
+    createOrderWithShippingAddress: async (_, { input }, { req }) => {
       isUserAuthenticated(req.user);
-      return await createOrderWithShippingAddressInput(
-        {
-          cart_id,
-          shipping_address
-        },
-        req.user
-      );
+      return await createOrderWithShippingAddress(input, req.user);
     },
     editOrder: async (
       _,
@@ -72,11 +61,11 @@ export const orderResolvers = {
     }
   },
   Order: {
-    products: async (obj, __, { req }) => {
-      // obj will the be returned value from any of the queries/mutations that will
+    products: async (parentValue, __, { req }) => {
+      // parentValue will the be returned value from any of the queries/mutations that will
       // be accessible in here whenever the products field is a requested return value
       // on the query/mutation.
-      return await retrieveProductsList(obj.products);
+      return await retrieveProductsList(parentValue.products);
     }
   }
 };

@@ -1,6 +1,7 @@
 import * as request from "supertest";
 import { app } from "../../../app";
 import { createUser } from "../../../Services/auth";
+import { User } from "../../Accounts/Models/user";
 import { Product } from "../../products/Models/product";
 import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
 import { dropProductCollection } from "../../Products/__tests__/product.test";
@@ -27,6 +28,14 @@ const adminUserCreateConfig = {
   is_admin: true
 };
 
+const shippingAddressInput = {
+  city: "Seattle",
+  state: "WA",
+  country: "USA",
+  street_address: "I forgot",
+  zip_code: "29391"
+};
+
 const createBillingInfoConfig = {
   street_address: "18350 N 32nd st",
   city: "town",
@@ -49,16 +58,14 @@ const createAndLoginUser = async (createdRequest, userCreateConfig) => {
       password: "password"
     }
   };
-  const response = await createdRequest
+  await createdRequest
     .post("/graphql")
     .set("Accept", "application/json")
     .type("form")
     .send(loginPostData);
-
-  const { loginUser } = response.body.data;
 };
 
-const createOrderWithUsersBillingInfoGraphQLRequest = async createdRequest => {
+const createOrderWithUsersBillingGraphQLRequest = async createdRequest => {
   const postData = {
     query: `mutation createOrderWithUsersBillingInfoOp {
                 createOrderWithUsersBillingInfo {
@@ -87,8 +94,49 @@ const createOrderWithUsersBillingInfoGraphQLRequest = async createdRequest => {
     .send(postData);
 
   const { createOrderWithUsersBillingInfo } = response.body.data;
-  console.log("THE CREATE ORDER RESPONSE BODY: ", response.body);
   return createOrderWithUsersBillingInfo;
+};
+
+const createOrderWithShippingAddressGraphQLRequest = async (
+  createdRequest,
+  shippingAddressInput
+) => {
+  const postData = {
+    query: `mutation createOrderWithShippingAddressOp($input: AddressInput) {
+                createOrderWithShippingAddress(input: $input) {
+                  total_amount
+                  after_tax_amount
+                  shipping_address {
+                    city
+                    state
+                    country
+                    state
+                    street_address
+                    zip_code
+                  }
+                  products {
+                    _id
+                  }
+                  quantity
+                }
+              }`,
+    operationName: "createOrderWithShippingAddressOp",
+    variables: {
+      input: shippingAddressInput
+    }
+  };
+  const response = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(postData);
+
+  const { createOrderWithShippingAddress } = response.body.data;
+  console.log(
+    "THE CREATE ORDER WITH SHIPPING ADDRESS RESPONSE BODY: ",
+    response.body
+  );
+  return createOrderWithShippingAddress;
 };
 
 const createUserBillingInfo = async (createdRequest, config) => {
@@ -116,7 +164,7 @@ const createUserBillingInfo = async (createdRequest, config) => {
 describe.only("Test product CRUD Operations via GraphQL queries and mutations", () => {
   let createdRequest;
   let server;
-  const productIdArr: IProductCreated[] = [];
+  let productIdArr: IProductCreated[] = [];
 
   beforeAll(async done => {
     server = await app.listen(done);
@@ -141,6 +189,7 @@ describe.only("Test product CRUD Operations via GraphQL queries and mutations", 
       19.99,
       ["jupiter", "saturn"]
     );
+    productIdArr = [];
     productIdArr.push(productOne);
     productIdArr.push(productTwo);
     productIdArr.push(productThree);
@@ -150,7 +199,7 @@ describe.only("Test product CRUD Operations via GraphQL queries and mutations", 
     await server.close(done);
   });
 
-  test("GraphQL Mutation successfully creates new orders", async () => {
+  test("creates a new order with user's billingInfo and removes cart from user", async () => {
     await createUserBillingInfo(createdRequest, createBillingInfoConfig);
     await createCartGraphQLRequest(createdRequest, {
       productId: productIdArr[0].productId,
@@ -166,10 +215,13 @@ describe.only("Test product CRUD Operations via GraphQL queries and mutations", 
     const productPriceTwo = productIdArr[1].productPrice * 4;
     const total = productPriceOne + productPriceTwo;
     const taxAmount = total + total * 0.14;
-    const result = await createOrderWithUsersBillingInfoGraphQLRequest(
+    const result = await createOrderWithUsersBillingGraphQLRequest(
       createdRequest
     );
-    // ALSO NEED TO TEST THAT CART IS DELETED FROM USER DURING THE OPERATION.
+    const retrievedUser = await User.findOne({
+      email: adminUserCreateConfig.email
+    });
+    expect((retrievedUser as any).cart).toBe(null);
     expect(parseFloat(result.total_amount)).toBe(total);
     expect(result.after_tax_amount).toEqual(taxAmount.toFixed(2));
     expect(result.products[0]._id).toBe(productIdArr[0].productId);
@@ -179,5 +231,41 @@ describe.only("Test product CRUD Operations via GraphQL queries and mutations", 
       [productIdArr[1].productId]: 4
     });
     expect(result.shipping_address).toEqual(createBillingInfoConfig);
+  });
+
+  test("creates a new order with shipping address entered by user and removes cart from user", async () => {
+    await createUserBillingInfo(createdRequest, createBillingInfoConfig);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[0].productId,
+      price: productIdArr[0].productPrice,
+      quantity: 2
+    });
+    await editCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[1].productId,
+      price: productIdArr[1].productPrice,
+      quantity: 4
+    });
+    const productPriceOne = productIdArr[0].productPrice * 2;
+    const productPriceTwo = productIdArr[1].productPrice * 4;
+    const total = productPriceOne + productPriceTwo;
+    const taxAmount = total + total * 0.14;
+    const result = await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+
+    const retrievedUser = await User.findOne({
+      email: adminUserCreateConfig.email
+    });
+    expect((retrievedUser as any).cart).toBe(null);
+    expect(parseFloat(result.total_amount)).toBe(total);
+    expect(result.after_tax_amount).toEqual(taxAmount.toFixed(2));
+    expect(result.products[0]._id).toBe(productIdArr[0].productId);
+    expect(result.products[1]._id).toBe(productIdArr[1].productId);
+    expect(result.quantity).toEqual({
+      [productIdArr[0].productId]: 2,
+      [productIdArr[1].productId]: 4
+    });
+    expect(result.shipping_address).toEqual(shippingAddressInput);
   });
 });

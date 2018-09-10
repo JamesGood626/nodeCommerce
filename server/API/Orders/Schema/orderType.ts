@@ -48,12 +48,7 @@ export const orderTypeDef = gql`
     user_id: String!
   }
 
-  input OrderWithUsersBillingInfoInput {
-    cart_id: String!
-  }
-
   input OrderWithShippingAddressInput {
-    cart_id: String!
     shipping_address: AddressInput!
   }
 
@@ -76,9 +71,7 @@ export const orderTypeDef = gql`
 
   extend type Mutation {
     createOrderWithUsersBillingInfo: Order
-    createOrderWithShippingAddressInput(
-      input: OrderWithShippingAddressInput
-    ): Order
+    createOrderWithShippingAddress(input: AddressInput): Order
     editOrder(input: EditOrderInput): Order
     deleteOrder(input: DeleteOrderInput): Boolean
   }

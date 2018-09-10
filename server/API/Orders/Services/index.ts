@@ -1,4 +1,14 @@
 import { Order, IOrderModel } from "../Models/order";
+import { User } from "../../Accounts/Models/user";
+
+const removeCartFromUser = async user => {
+  await User.findOne({ email: user.email }).then(async user => {
+    (user as any).cart.remove();
+    return await (user as any).save().catch(err => {
+      console.log("ERROR SAVING UPDATED USER WITH CART REMOVED INFO: ", err); // TODO: Handle Error
+    });
+  });
+};
 
 export const getAllOrders = async () => {
   const allOrders: IOrderModel[] = await Order.find({}).then(result => result);
@@ -18,7 +28,6 @@ export const adminGetAllUserOrders = async userId => {
 };
 
 export const createOrderWithUsersBillingInfo = async user => {
-  console.log("THE USER IN CREATE ORDER: ", user);
   return new Promise(async (resolve, reject) => {
     const totalAmount = user.cart.total_price_amount;
     const totalAfterTax = totalAmount + totalAmount * 0.14;
@@ -33,15 +42,27 @@ export const createOrderWithUsersBillingInfo = async user => {
     };
     const order = new Order(orderInput);
     await order.save();
-    console.log("THE SAVED ORDER: ", order);
+    await removeCartFromUser(user);
     return resolve(order);
   });
 };
 
-export const createOrderWithShippingAddressInput = async (input, user) => {
+export const createOrderWithShippingAddress = async (input, user) => {
   return new Promise(async (resolve, reject) => {
-    const order = new Order(input);
+    const totalAmount = user.cart.total_price_amount;
+    const totalAfterTax = totalAmount + totalAmount * 0.14;
+    const orderInput = {
+      user: user._id,
+      total_amount: totalAmount,
+      after_tax_amount: totalAfterTax.toFixed(2),
+      shipping_cost: 7.99,
+      shipping_address: input,
+      products: user.cart.products,
+      quantity: user.cart.quantity
+    };
+    const order = new Order(orderInput);
     await order.save();
+    await removeCartFromUser(user);
     return resolve(order);
   });
 };
