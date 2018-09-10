@@ -19,8 +19,12 @@ import {
 // otherwise if they don't have a billing address entered
 // don't allow them to post from the client side.
 // *****
-// Retrieve All orders
-// Retrieve Details of a single order ()
+
+// Still need to test:
+// Admin can retrieve All orders created by every user
+// Admin can retrieve All orders created by a particular user
+// Retrieve Details of a single order (should just be able to use the
+// query info sent to the client when all orders are retrieved to handle this case.)
 // Edit an order
 // Delete an order (Admin only)
 const adminUserCreateConfig = {
@@ -31,6 +35,12 @@ const adminUserCreateConfig = {
 
 const regularUserCreateConfig = {
   email: "jessica@gmail.com",
+  password: "password",
+  is_admin: false
+};
+
+const regularUserCreateConfigTwo = {
+  email: "joe@gmail.com",
   password: "password",
   is_admin: false
 };
@@ -223,7 +233,7 @@ const createUserBillingInfo = async (createdRequest, config) => {
     .send(createBillingInfoPostData);
 };
 
-describe("Test product CRUD Operations via GraphQL queries and mutations", () => {
+describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
   let createdRequest;
   let server;
   let productIdArr: IProductCreated[] = [];
@@ -322,7 +332,6 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     const retrievedUser = await User.findOne({
       email: adminUserCreateConfig.email
     });
-    console.log("THE RETRIEVED USER AFTER ORDER IS CREATED: ", retrievedUser);
     expect((retrievedUser as any).cart).toBe(null);
     expect(parseFloat(result.total_amount)).toBe(total);
     expect(result.after_tax_amount).toEqual(taxAmount.toFixed(2));
@@ -386,6 +395,37 @@ describe("Test product CRUD Operations via GraphQL queries and mutations", () =>
     const result = await retrieveAllUserOrdersGraphQLRequest(createdRequest);
     expect(result.length).toBe(2);
   });
+
+  test("admin can retrieve all orders created by every user.", async () => {
+    await createUser(regularUserCreateConfig);
+    await loginUser(createdRequest, regularUserCreateConfig);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[0].productId,
+      price: productIdArr[0].productPrice,
+      quantity: 2
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+    await createUser(regularUserCreateConfigTwo);
+    await loginUser(createdRequest, regularUserCreateConfigTwo);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[1].productId,
+      price: productIdArr[1].productPrice,
+      quantity: 4
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInputTwo
+    );
+    await loginUser(createdRequest, adminUserCreateConfig);
+    const result = await retrieveAllOrdersGraphQLRequest(createdRequest);
+    expect(result.length).toBe(2);
+    expect(result[0].shipping_address).toEqual(shippingAddressInput);
+    expect(result[1].shipping_address).toEqual(shippingAddressInputTwo);
+  });
+
   // test("admin can retrieve all orders for the user who created the order.", async () => {}
   // test editOrder
   // test deleteOrder
