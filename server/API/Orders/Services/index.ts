@@ -1,13 +1,27 @@
 import { Order, IOrderModel } from "../Models/order";
 import { User } from "../../Accounts/Models/user";
 
-const removeCartFromUser = async user => {
+const removeCartAndSaveOrderOnUser = async (user, orderId) => {
   await User.findOne({ email: user.email }).then(async user => {
     (user as any).cart.remove();
+    (user as any).orders.push(orderId);
     return await (user as any).save().catch(err => {
       console.log("ERROR SAVING UPDATED USER WITH CART REMOVED INFO: ", err); // TODO: Handle Error
     });
   });
+};
+
+const retrieveOrderList = async orderIdArr => {
+  if (orderIdArr.length > 1) {
+    return await Order.find({ _id: { $in: orderIdArr } }, (err, result) => {
+      console.log("THE ERR FINDING PRODUCT LIST: ", err);
+      console.log("THE RESULT OF FINDING THE PRODUCT LIST: ", result);
+      return result;
+    });
+  } else {
+    const order = await Order.findById(orderIdArr[0]).then(result => result);
+    return [order];
+  }
 };
 
 export const getAllOrders = async () => {
@@ -17,8 +31,9 @@ export const getAllOrders = async () => {
 
 export const allUserOrders = async user => {
   console.log("THE USER IN ALL USER ORDERS: ", user);
-  const allOrders: IOrderModel[] = await Order.find({}).then(result => result);
-  return allOrders;
+  const orders = await retrieveOrderList(user.orders);
+  console.log("THE ORDERS BEING RETURNED: ", orders);
+  return orders;
 };
 
 export const adminGetAllUserOrders = async userId => {
@@ -42,7 +57,7 @@ export const createOrderWithUsersBillingInfo = async user => {
     };
     const order = new Order(orderInput);
     await order.save();
-    await removeCartFromUser(user);
+    await removeCartAndSaveOrderOnUser(user, order._id);
     return resolve(order);
   });
 };
@@ -62,7 +77,7 @@ export const createOrderWithShippingAddress = async (input, user) => {
     };
     const order = new Order(orderInput);
     await order.save();
-    await removeCartFromUser(user);
+    await removeCartAndSaveOrderOnUser(user, order._id);
     return resolve(order);
   });
 };

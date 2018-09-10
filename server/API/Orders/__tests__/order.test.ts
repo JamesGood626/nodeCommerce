@@ -2,6 +2,7 @@ import * as request from "supertest";
 import { app } from "../../../app";
 import { createUser } from "../../../Services/auth";
 import { User } from "../../Accounts/Models/user";
+import { Order } from "../Models/order";
 import { Product } from "../../products/Models/product";
 import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
 import { dropProductCollection } from "../../Products/__tests__/product.test";
@@ -28,12 +29,26 @@ const adminUserCreateConfig = {
   is_admin: true
 };
 
+const regularUserCreateConfig = {
+  email: "jessica@gmail.com",
+  password: "password",
+  is_admin: false
+};
+
 const shippingAddressInput = {
   city: "Seattle",
   state: "WA",
   country: "USA",
   street_address: "I forgot",
   zip_code: "29391"
+};
+
+const shippingAddressInputTwo = {
+  city: "Phoenix",
+  state: "AZ",
+  country: "USA",
+  street_address: "I forgot twice now",
+  zip_code: "93019"
 };
 
 const createBillingInfoConfig = {
@@ -44,8 +59,13 @@ const createBillingInfoConfig = {
   country: "mars"
 };
 
-const createAndLoginUser = async (createdRequest, userCreateConfig) => {
-  await createUser(userCreateConfig);
+const dropOrderCollection = async () => {
+  await Order.remove({}, err =>
+    console.log("Order Collection Drop Error: ", err)
+  );
+};
+
+const loginUser = async (createdRequest, userConfig) => {
   const loginPostData = {
     query: `mutation loginUserOp($email: String!, $password: String!) {
                 loginUser(email: $email, password: $password) {
@@ -54,8 +74,8 @@ const createAndLoginUser = async (createdRequest, userCreateConfig) => {
               }`,
     operationName: "loginUserOp",
     variables: {
-      email: "admin@gmail.com",
-      password: "password"
+      email: userConfig.email,
+      password: userConfig.password
     }
   };
   await createdRequest
@@ -132,11 +152,53 @@ const createOrderWithShippingAddressGraphQLRequest = async (
     .send(postData);
 
   const { createOrderWithShippingAddress } = response.body.data;
-  console.log(
-    "THE CREATE ORDER WITH SHIPPING ADDRESS RESPONSE BODY: ",
-    response.body
-  );
   return createOrderWithShippingAddress;
+};
+
+// ********
+const retrieveAllOrdersGraphQLRequest = async createdRequest => {
+  const postData = {
+    query: `query allOrdersOp {
+                allOrders {
+                  shipping_address {
+                    city
+                    state
+                    country
+                    state
+                    street_address
+                    zip_code
+                  }
+                }
+              }`,
+    operationName: "allOrdersOp"
+  };
+  const response = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(postData);
+
+  const { allOrders } = response.body.data;
+  return allOrders;
+};
+
+const retrieveAllUserOrdersGraphQLRequest = async createdRequest => {
+  const postData = {
+    query: `query allUserOrdersOp {
+                allUserOrders {
+                  _id
+                }
+              }`,
+    operationName: "allUserOrdersOp"
+  };
+  const response = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(postData);
+
+  const { allUserOrders } = response.body.data;
+  return allUserOrders;
 };
 
 const createUserBillingInfo = async (createdRequest, config) => {
@@ -154,14 +216,14 @@ const createUserBillingInfo = async (createdRequest, config) => {
     }
   };
 
-  const createBillingInfoResponse = await createdRequest
+  await createdRequest
     .post("/graphql")
     .set("Accept", "application/json")
     .type("form")
     .send(createBillingInfoPostData);
 };
 
-describe.only("Test product CRUD Operations via GraphQL queries and mutations", () => {
+describe("Test product CRUD Operations via GraphQL queries and mutations", () => {
   let createdRequest;
   let server;
   let productIdArr: IProductCreated[] = [];
@@ -173,7 +235,9 @@ describe.only("Test product CRUD Operations via GraphQL queries and mutations", 
 
   beforeEach(async () => {
     await dropUserCollection();
-    await createAndLoginUser(createdRequest, adminUserCreateConfig);
+    await dropOrderCollection();
+    await createUser(adminUserCreateConfig);
+    await loginUser(createdRequest, adminUserCreateConfig);
     await dropProductCollection();
     const productOne = await createProductGraphQLRequest(createdRequest, 9.99, [
       "mercury",
@@ -222,6 +286,7 @@ describe.only("Test product CRUD Operations via GraphQL queries and mutations", 
       email: adminUserCreateConfig.email
     });
     expect((retrievedUser as any).cart).toBe(null);
+    expect((retrievedUser as any).orders.length).toBe(1);
     expect(parseFloat(result.total_amount)).toBe(total);
     expect(result.after_tax_amount).toEqual(taxAmount.toFixed(2));
     expect(result.products[0]._id).toBe(productIdArr[0].productId);
@@ -257,6 +322,7 @@ describe.only("Test product CRUD Operations via GraphQL queries and mutations", 
     const retrievedUser = await User.findOne({
       email: adminUserCreateConfig.email
     });
+    console.log("THE RETRIEVED USER AFTER ORDER IS CREATED: ", retrievedUser);
     expect((retrievedUser as any).cart).toBe(null);
     expect(parseFloat(result.total_amount)).toBe(total);
     expect(result.after_tax_amount).toEqual(taxAmount.toFixed(2));
@@ -268,4 +334,59 @@ describe.only("Test product CRUD Operations via GraphQL queries and mutations", 
     });
     expect(result.shipping_address).toEqual(shippingAddressInput);
   });
+
+  test("retrieves all orders", async () => {
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[0].productId,
+      price: productIdArr[0].productPrice,
+      quantity: 2
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+    await createUser(regularUserCreateConfig);
+    await loginUser(createdRequest, regularUserCreateConfig);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[1].productId,
+      price: productIdArr[1].productPrice,
+      quantity: 4
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInputTwo
+    );
+    await loginUser(createdRequest, adminUserCreateConfig);
+    const result = await retrieveAllOrdersGraphQLRequest(createdRequest);
+    expect(result[0].shipping_address).toEqual(shippingAddressInput);
+    expect(result[1].shipping_address).toEqual(shippingAddressInputTwo);
+  });
+
+  test("user retrieve all orders they created.", async () => {
+    await createUser(regularUserCreateConfig);
+    await loginUser(createdRequest, regularUserCreateConfig);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[0].productId,
+      price: productIdArr[0].productPrice,
+      quantity: 2
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[1].productId,
+      price: productIdArr[1].productPrice,
+      quantity: 4
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+    const result = await retrieveAllUserOrdersGraphQLRequest(createdRequest);
+    expect(result.length).toBe(2);
+  });
+  // test("admin can retrieve all orders for the user who created the order.", async () => {}
+  // test editOrder
+  // test deleteOrder
 });

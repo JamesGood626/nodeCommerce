@@ -5,7 +5,6 @@ import { Product } from "../../Products/Models/product";
 import { createUser } from "../../../Services/auth";
 import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
 import { dropProductCollection } from "../../Products/__tests__/product.test";
-import { String } from "../../../node_modules/aws-sdk/clients/sqs";
 // Oh yeah.. cart is just a Sub Document on the User Model.
 // Create and Add product to cart
 // ****
