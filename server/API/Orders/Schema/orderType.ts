@@ -18,6 +18,7 @@ export const orderTypeDef = gql`
 
   type Order {
     _id: String!
+    user_email: String!
     total_amount: String!
     after_tax_amount: String!
     shipping_cost: String!
@@ -45,7 +46,7 @@ export const orderTypeDef = gql`
   }
 
   input UsersOrdersSearchInput {
-    user_id: String!
+    user_email: String!
   }
 
   input OrderWithShippingAddressInput {

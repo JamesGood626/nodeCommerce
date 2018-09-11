@@ -1,6 +1,7 @@
 import { Document, Schema, Model, model } from "mongoose";
 import { IBillingInfo } from "../../BillingInfo/Models/billingInfo";
 import { ICart } from "../../Cart/Models/cart";
+import { IOrderModel } from "../../Orders/Models/order";
 import { IUserReviewModel } from "../../UserReviews/Models/userReview";
 import { billingInfoSchema } from "../../BillingInfo/Models/billingInfo";
 import { cartSchema } from "../../Cart/Models/cart";
@@ -11,6 +12,7 @@ interface IUser {
   password: string;
   billing_info: IBillingInfo;
   cart: ICart;
+  orders: [IOrderModel];
   user_reviews: [IUserReviewModel];
 }
 

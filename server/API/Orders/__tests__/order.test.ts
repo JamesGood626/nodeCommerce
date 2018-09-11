@@ -211,6 +211,42 @@ const retrieveAllUserOrdersGraphQLRequest = async createdRequest => {
   return allUserOrders;
 };
 
+const adminRetrieveAllUserOrders = async (createdRequest, userEmail) => {
+  const postData = {
+    query: `query adminGetAllUserOrdersOp($input: UsersOrdersSearchInput) {
+                adminGetAllUserOrders(input: $input) {
+                  user_email
+                  total_amount
+                  after_tax_amount
+                  shipping_address {
+                    city
+                    state
+                    country
+                    state
+                    street_address
+                    zip_code
+                  }
+                  products {
+                    _id
+                  }
+                  quantity
+                }
+              }`,
+    operationName: "adminGetAllUserOrdersOp",
+    variables: {
+      input: { user_email: userEmail }
+    }
+  };
+  const response = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(postData);
+
+  const { adminGetAllUserOrders } = response.body.data;
+  return adminGetAllUserOrders;
+};
+
 const createUserBillingInfo = async (createdRequest, config) => {
   const createBillingInfoPostData = {
     query: `mutation createBillingInfoOp($input: BillingInfoInput) {
@@ -270,6 +306,7 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
   });
 
   afterAll(async done => {
+    await dropProductCollection();
     await server.close(done);
   });
 
@@ -426,7 +463,48 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     expect(result[1].shipping_address).toEqual(shippingAddressInputTwo);
   });
 
-  // test("admin can retrieve all orders for the user who created the order.", async () => {}
+  test("admin can retrieve all orders for the user who created the order.", async () => {
+    await createUser(regularUserCreateConfig);
+    await loginUser(createdRequest, regularUserCreateConfig);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[0].productId,
+      price: productIdArr[0].productPrice,
+      quantity: 2
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[1].productId,
+      price: productIdArr[1].productPrice,
+      quantity: 4
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+    await createUser(regularUserCreateConfigTwo);
+    await loginUser(createdRequest, regularUserCreateConfigTwo);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productIdArr[2].productId,
+      price: productIdArr[2].productPrice,
+      quantity: 3
+    });
+    await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInputTwo
+    );
+    // Admin login here.
+    await loginUser(createdRequest, adminUserCreateConfig);
+    const result = await adminRetrieveAllUserOrders(
+      createdRequest,
+      regularUserCreateConfig.email
+    );
+    expect(result.length).toBe(2);
+    expect(result[0].user_email).toBe(regularUserCreateConfig.email);
+    expect(result[1].user_email).toBe(regularUserCreateConfig.email);
+  });
   // test editOrder
   // test deleteOrder
 });

@@ -7,6 +7,8 @@ export const userTypeDef = gql`
     password: String!
     billing_info: BillingInfo
     cart: Cart
+    orders: [Order]
+    user_reviews: UserReview
   }
 
   extend type Query {

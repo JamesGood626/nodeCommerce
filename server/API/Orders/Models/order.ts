@@ -48,9 +48,9 @@ export interface IOrderModel extends IOrder, Document {}
 
 // Prices for total_amount and after_tax_amount will require some pre_save hooks to calculate
 export const orderSchema = new Schema({
-  user: {
-    type: Schema.Types.ObjectId,
-    ref: "User"
+  user_email: {
+    type: String,
+    required: true
   },
   total_amount: {
     type: Number,

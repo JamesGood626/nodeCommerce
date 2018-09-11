@@ -20,9 +20,9 @@ export const orderResolvers = {
       isUserAuthenticated(req.user);
       return allUserOrders(req.user);
     },
-    adminGetAllUserOrders: (_, { input: { user_id } }, { req }): any => {
+    adminGetAllUserOrders: (_, { input: { user_email } }, { req }): any => {
       isAdmin(req.user);
-      return adminGetAllUserOrders(user_id);
+      return adminGetAllUserOrders({ user_email });
     }
   },
   Mutation: {

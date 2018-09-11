@@ -1,6 +1,7 @@
 import { IUserModel } from "../Models/user";
 import { createUser, login, updatePassword } from "../../../Services/auth";
 import { getAllUsers } from "../Services";
+import { retrieveOrderList } from "../Services";
 
 // interface IQuery {
 //   allUsers: () => Array<{id: number; email: string; password: string; }>;
@@ -20,6 +21,7 @@ import { getAllUsers } from "../Services";
 //   Query: object;
 //   Mutation: object;
 // }
+
 export const userResolvers = {
   Query: {
     allUsers: (_, ___, { req }) => {
@@ -39,6 +41,15 @@ export const userResolvers = {
     },
     updatePassword: (parentValue, { email, oldPassword, newPassword }): any => {
       return updatePassword(email, oldPassword, newPassword);
+    }
+  },
+  User: {
+    orders: async (parentValue, __, { req }) => {
+      // parentValue will the be returned value from any of the queries/mutations that will
+      // be accessible in here whenever the products field is a requested return value
+      // on the query/mutation.
+      console.log("HITTING THE USER ORDER RESOLVER: ", parentValue);
+      return await retrieveOrderList(parentValue.order);
     }
   }
 };

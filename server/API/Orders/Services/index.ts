@@ -1,5 +1,5 @@
 import { Order, IOrderModel } from "../Models/order";
-import { User } from "../../Accounts/Models/user";
+import { User, IUserModel } from "../../Accounts/Models/user";
 
 const removeCartAndSaveOrderOnUser = async (user, orderId) => {
   await User.findOne({ email: user.email }).then(async user => {
@@ -15,7 +15,7 @@ const retrieveOrderList = async orderIdArr => {
   if (orderIdArr.length > 1) {
     return await Order.find({ _id: { $in: orderIdArr } }, (err, result) => {
       console.log("THE ERR FINDING PRODUCT LIST: ", err);
-      console.log("THE RESULT OF FINDING THE PRODUCT LIST: ", result);
+      console.log("THE RESULT OF FINDING THE ORDER LIST: ", result);
       return result;
     });
   } else {
@@ -30,16 +30,13 @@ export const getAllOrders = async () => {
 };
 
 export const allUserOrders = async user => {
-  console.log("THE USER IN ALL USER ORDERS: ", user);
   const orders = await retrieveOrderList(user.orders);
-  console.log("THE ORDERS BEING RETURNED: ", orders);
   return orders;
 };
 
-export const adminGetAllUserOrders = async userId => {
-  console.log("THE USERID IN ADMIN GET ALL USER ORDERS: ", userId);
-  const allOrders: IOrderModel[] = await Order.find({}).then(result => result);
-  return allOrders;
+export const adminGetAllUserOrders = async ({ user_email }) => {
+  const orders = await Order.find({ user_email }).then(result => result);
+  return orders;
 };
 
 export const createOrderWithUsersBillingInfo = async user => {
@@ -47,7 +44,7 @@ export const createOrderWithUsersBillingInfo = async user => {
     const totalAmount = user.cart.total_price_amount;
     const totalAfterTax = totalAmount + totalAmount * 0.14;
     const orderInput = {
-      user: user._id,
+      user_email: user.email,
       total_amount: totalAmount,
       after_tax_amount: totalAfterTax.toFixed(2),
       shipping_cost: 7.99,
@@ -67,7 +64,7 @@ export const createOrderWithShippingAddress = async (input, user) => {
     const totalAmount = user.cart.total_price_amount;
     const totalAfterTax = totalAmount + totalAmount * 0.14;
     const orderInput = {
-      user: user._id,
+      user_email: user.email,
       total_amount: totalAmount,
       after_tax_amount: totalAfterTax.toFixed(2),
       shipping_cost: 7.99,
@@ -81,6 +78,7 @@ export const createOrderWithShippingAddress = async (input, user) => {
     return resolve(order);
   });
 };
+
 // For edit order input I'd want to allow for the product list
 // and quantity to be changed, only if both of those were
 // passed as input. One can't be updated w/out the other.
