@@ -133,7 +133,7 @@ const removeProductGraphQLRequest = async (createdRequest, args) => {
   return { removeProductStatucCode, removeProductData };
 };
 
-export const createProductGraphQLRequest = async (
+const createProductGraphQLRequest = async (
   createdRequest,
   price,
   images
@@ -148,7 +148,10 @@ export const createProductGraphQLRequest = async (
     query: `mutation createProductOp($input: ProductInput) {
                   createProduct(input: $input) {
                     _id
+                    product_title
+                    description
                     price
+                    images
                   }
                 }`,
     operationName: "createProductOp",

@@ -7,10 +7,8 @@ import { Product } from "../../products/Models/product";
 import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
 import { dropProductCollection } from "../../Products/__tests__/product.test";
 import {
-  createProductGraphQLRequest,
   createCartGraphQLRequest,
-  editCartGraphQLRequest,
-  IProductCreated
+  editCartGraphQLRequest
 } from "../../Cart/__tests__/cart.test";
 // Create an order
 // *****
@@ -59,6 +57,19 @@ const shippingAddressInputTwo = {
   country: "USA",
   street_address: "I forgot twice now",
   zip_code: "93019"
+};
+
+const editOrderInput: any = {
+  order_id: null,
+  products: [],
+  shipping_address: {
+    city: "San Diego",
+    state: "CA",
+    country: "USA",
+    street_address: "I forgot thrice now",
+    zip_code: "91029"
+  },
+  quantity: {}
 };
 
 const createBillingInfoConfig = {
@@ -134,6 +145,7 @@ const createOrderWithShippingAddressGraphQLRequest = async (
   const postData = {
     query: `mutation createOrderWithShippingAddressOp($input: AddressInput) {
                 createOrderWithShippingAddress(input: $input) {
+                  _id
                   total_amount
                   after_tax_amount
                   shipping_address {
@@ -247,6 +259,35 @@ const adminRetrieveAllUserOrders = async (createdRequest, userEmail) => {
   return adminGetAllUserOrders;
 };
 
+const editOrderGraphQLRequest = async (createdRequest, editOrderInput) => {
+  const postData = {
+    query: `mutation editOrderOp($input: EditOrderInput) {
+                editOrder(input: $input) {
+                  shipping_address {
+                    street_address
+                    city
+                    state
+                    zip_code
+                    state
+                    country
+                  }
+                }
+              }`,
+    operationName: "editOrderOp",
+    variables: {
+      input: editOrderInput
+    }
+  };
+  const response = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(postData);
+
+  const { editOrder } = response.body.data;
+  return editOrder;
+};
+
 const createUserBillingInfo = async (createdRequest, config) => {
   const createBillingInfoPostData = {
     query: `mutation createBillingInfoOp($input: BillingInfoInput) {
@@ -269,10 +310,49 @@ const createUserBillingInfo = async (createdRequest, config) => {
     .send(createBillingInfoPostData);
 };
 
+// Yeah, I could have just kept using the one from the cart.test file.
+// Will have to handle removing this when I refactor aye.
+const createProductGraphQLRequest = async (
+  createdRequest,
+  price,
+  images
+): Promise<any> => {
+  const productCreateInput = {
+    product_title: "Planet",
+    description: "The most awesome product description.",
+    price,
+    images
+  };
+  const firstPostCreateData = {
+    query: `mutation createProductOp($input: ProductInput) {
+                  createProduct(input: $input) {
+                    _id
+                    product_title
+                    description
+                    price
+                    images
+                  }
+                }`,
+    operationName: "createProductOp",
+    variables: {
+      input: productCreateInput
+    }
+  };
+
+  const productCreateResponse = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(firstPostCreateData);
+
+  const { createProduct } = productCreateResponse.body.data;
+  return createProduct;
+};
+
 describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
   let createdRequest;
   let server;
-  let productIdArr: IProductCreated[] = [];
+  let productArr: any = [];
 
   beforeAll(async done => {
     server = await app.listen(done);
@@ -299,10 +379,10 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
       19.99,
       ["jupiter", "saturn"]
     );
-    productIdArr = [];
-    productIdArr.push(productOne);
-    productIdArr.push(productTwo);
-    productIdArr.push(productThree);
+    productArr = [];
+    productArr.push(productOne);
+    productArr.push(productTwo);
+    productArr.push(productThree);
   });
 
   afterAll(async done => {
@@ -313,17 +393,17 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
   test("creates a new order with user's billingInfo and removes cart from user", async () => {
     await createUserBillingInfo(createdRequest, createBillingInfoConfig);
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[0].productId,
-      price: productIdArr[0].productPrice,
+      productId: productArr[0]._id,
+      price: productArr[0].price,
       quantity: 2
     });
     await editCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[1].productId,
-      price: productIdArr[1].productPrice,
+      productId: productArr[1]._id,
+      price: productArr[1].price,
       quantity: 4
     });
-    const productPriceOne = productIdArr[0].productPrice * 2;
-    const productPriceTwo = productIdArr[1].productPrice * 4;
+    const productPriceOne = productArr[0].price * 2;
+    const productPriceTwo = productArr[1].price * 4;
     const total = productPriceOne + productPriceTwo;
     const taxAmount = total + total * 0.14;
     const result = await createOrderWithUsersBillingGraphQLRequest(
@@ -336,11 +416,11 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     expect((retrievedUser as any).orders.length).toBe(1);
     expect(parseFloat(result.total_amount)).toBe(total);
     expect(result.after_tax_amount).toEqual(taxAmount.toFixed(2));
-    expect(result.products[0]._id).toBe(productIdArr[0].productId);
-    expect(result.products[1]._id).toBe(productIdArr[1].productId);
+    expect(result.products[0]._id).toBe(productArr[0]._id);
+    expect(result.products[1]._id).toBe(productArr[1]._id);
     expect(result.quantity).toEqual({
-      [productIdArr[0].productId]: 2,
-      [productIdArr[1].productId]: 4
+      [productArr[0]._id]: 2,
+      [productArr[1]._id]: 4
     });
     expect(result.shipping_address).toEqual(createBillingInfoConfig);
   });
@@ -348,17 +428,17 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
   test("creates a new order with shipping address entered by user and removes cart from user", async () => {
     await createUserBillingInfo(createdRequest, createBillingInfoConfig);
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[0].productId,
-      price: productIdArr[0].productPrice,
+      productId: productArr[0]._id,
+      price: productArr[0].price,
       quantity: 2
     });
     await editCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[1].productId,
-      price: productIdArr[1].productPrice,
+      productId: productArr[1]._id,
+      price: productArr[1].price,
       quantity: 4
     });
-    const productPriceOne = productIdArr[0].productPrice * 2;
-    const productPriceTwo = productIdArr[1].productPrice * 4;
+    const productPriceOne = productArr[0].price * 2;
+    const productPriceTwo = productArr[1].price * 4;
     const total = productPriceOne + productPriceTwo;
     const taxAmount = total + total * 0.14;
     const result = await createOrderWithShippingAddressGraphQLRequest(
@@ -372,19 +452,19 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     expect((retrievedUser as any).cart).toBe(null);
     expect(parseFloat(result.total_amount)).toBe(total);
     expect(result.after_tax_amount).toEqual(taxAmount.toFixed(2));
-    expect(result.products[0]._id).toBe(productIdArr[0].productId);
-    expect(result.products[1]._id).toBe(productIdArr[1].productId);
+    expect(result.products[0]._id).toBe(productArr[0]._id);
+    expect(result.products[1]._id).toBe(productArr[1]._id);
     expect(result.quantity).toEqual({
-      [productIdArr[0].productId]: 2,
-      [productIdArr[1].productId]: 4
+      [productArr[0]._id]: 2,
+      [productArr[1]._id]: 4
     });
     expect(result.shipping_address).toEqual(shippingAddressInput);
   });
 
   test("retrieves all orders", async () => {
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[0].productId,
-      price: productIdArr[0].productPrice,
+      productId: productArr[0]._id,
+      price: productArr[0].price,
       quantity: 2
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -394,8 +474,8 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     await createUser(regularUserCreateConfig);
     await loginUser(createdRequest, regularUserCreateConfig);
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[1].productId,
-      price: productIdArr[1].productPrice,
+      productId: productArr[1]._id,
+      price: productArr[1].price,
       quantity: 4
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -412,8 +492,8 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     await createUser(regularUserCreateConfig);
     await loginUser(createdRequest, regularUserCreateConfig);
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[0].productId,
-      price: productIdArr[0].productPrice,
+      productId: productArr[0]._id,
+      price: productArr[0].price,
       quantity: 2
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -421,8 +501,8 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
       shippingAddressInput
     );
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[1].productId,
-      price: productIdArr[1].productPrice,
+      productId: productArr[1]._id,
+      price: productArr[1].price,
       quantity: 4
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -437,8 +517,8 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     await createUser(regularUserCreateConfig);
     await loginUser(createdRequest, regularUserCreateConfig);
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[0].productId,
-      price: productIdArr[0].productPrice,
+      productId: productArr[0]._id,
+      price: productArr[0].price,
       quantity: 2
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -448,8 +528,8 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     await createUser(regularUserCreateConfigTwo);
     await loginUser(createdRequest, regularUserCreateConfigTwo);
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[1].productId,
-      price: productIdArr[1].productPrice,
+      productId: productArr[1]._id,
+      price: productArr[1].price,
       quantity: 4
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -467,8 +547,8 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     await createUser(regularUserCreateConfig);
     await loginUser(createdRequest, regularUserCreateConfig);
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[0].productId,
-      price: productIdArr[0].productPrice,
+      productId: productArr[0]._id,
+      price: productArr[0].price,
       quantity: 2
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -476,8 +556,8 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
       shippingAddressInput
     );
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[1].productId,
-      price: productIdArr[1].productPrice,
+      productId: productArr[1]._id,
+      price: productArr[1].price,
       quantity: 4
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -487,8 +567,8 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     await createUser(regularUserCreateConfigTwo);
     await loginUser(createdRequest, regularUserCreateConfigTwo);
     await createCartGraphQLRequest(createdRequest, {
-      productId: productIdArr[2].productId,
-      price: productIdArr[2].productPrice,
+      productId: productArr[2]._id,
+      price: productArr[2].price,
       quantity: 3
     });
     await createOrderWithShippingAddressGraphQLRequest(
@@ -505,6 +585,29 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     expect(result[0].user_email).toBe(regularUserCreateConfig.email);
     expect(result[1].user_email).toBe(regularUserCreateConfig.email);
   });
-  // test editOrder
+
+  test("admin can edit an order.", async () => {
+    await createUser(regularUserCreateConfig);
+    await loginUser(createdRequest, regularUserCreateConfig);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productArr[0]._id,
+      price: productArr[0].price,
+      quantity: 2
+    });
+    const orderResult = await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+    await loginUser(createdRequest, adminUserCreateConfig);
+    editOrderInput.order_id = orderResult._id;
+    editOrderInput.products.push(productArr[0]._id);
+    // Erroring out at this line.
+    (editOrderInput as any).quantity[productArr[0].productId] = 4;
+    const result = await editOrderGraphQLRequest(
+      createdRequest,
+      editOrderInput
+    );
+    expect(result.shipping_address).not.toBe(orderResult.shipping_address);
+  });
   // test deleteOrder
 });

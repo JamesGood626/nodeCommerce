@@ -56,7 +56,7 @@ export const orderTypeDef = gql`
   input EditOrderInput {
     order_id: String!
     shipping_address: AddressEditInput
-    products: [ProductInput]
+    products: [String]
     quantity: Raw
   }
 

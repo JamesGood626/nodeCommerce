@@ -83,9 +83,7 @@ export const createOrderWithShippingAddress = async (input, user) => {
 // and quantity to be changed, only if both of those were
 // passed as input. One can't be updated w/out the other.
 export const editOrder = async (input, user) => {
-  if (!user.is_admin) {
-    return;
-  }
+  console.log("THE EDIT ORDER INPUT: ", input);
   return new Promise(async (resolve, reject) => {
     const { order_id } = input;
     const order = await Order.findByIdAndUpdate(
@@ -99,6 +97,7 @@ export const editOrder = async (input, user) => {
         return order;
       }
     );
+    console.log("ORDER BEING RETURNED FROM EDIT: ", order);
     return resolve(order as any);
   });
 };
