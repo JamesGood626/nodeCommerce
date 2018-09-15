@@ -97,7 +97,6 @@ export const editOrder = async (input, user) => {
         return order;
       }
     );
-    console.log("ORDER BEING RETURNED FROM EDIT: ", order);
     return resolve(order as any);
   });
 };

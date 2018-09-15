@@ -10,6 +10,7 @@ import {
   createCartGraphQLRequest,
   editCartGraphQLRequest
 } from "../../Cart/__tests__/cart.test";
+
 // Create an order
 // *****
 // Use the shipping address provided by user if they entered one.
@@ -110,6 +111,7 @@ const createOrderWithUsersBillingGraphQLRequest = async createdRequest => {
   const postData = {
     query: `mutation createOrderWithUsersBillingInfoOp {
                 createOrderWithUsersBillingInfo {
+                  _id
                   total_amount
                   after_tax_amount
                   shipping_address {
@@ -286,6 +288,26 @@ const editOrderGraphQLRequest = async (createdRequest, editOrderInput) => {
 
   const { editOrder } = response.body.data;
   return editOrder;
+};
+
+const deleteOrderGraphQLRequest = async (createdRequest, deleteOrderInput) => {
+  const postData = {
+    query: `mutation deleteOrderOp($input: DeleteOrderInput) {
+                deleteOrder(input: $input)
+              }`,
+    operationName: "deleteOrderOp",
+    variables: {
+      input: deleteOrderInput
+    }
+  };
+  const response = await createdRequest
+    .post("/graphql")
+    .set("Accept", "application/json")
+    .type("form")
+    .send(postData);
+
+  const { deleteOrder } = response.body.data;
+  return deleteOrder;
 };
 
 const createUserBillingInfo = async (createdRequest, config) => {
@@ -601,7 +623,6 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     await loginUser(createdRequest, adminUserCreateConfig);
     editOrderInput.order_id = orderResult._id;
     editOrderInput.products.push(productArr[0]._id);
-    // Erroring out at this line.
     (editOrderInput as any).quantity[productArr[0].productId] = 4;
     const result = await editOrderGraphQLRequest(
       createdRequest,
@@ -609,5 +630,23 @@ describe("Test order CRUD Operations via GraphQL queries and mutations", () => {
     );
     expect(result.shipping_address).not.toBe(orderResult.shipping_address);
   });
-  // test deleteOrder
+
+  test("admin can delete an order.", async () => {
+    await createUser(regularUserCreateConfig);
+    await loginUser(createdRequest, regularUserCreateConfig);
+    await createCartGraphQLRequest(createdRequest, {
+      productId: productArr[0]._id,
+      price: productArr[0].price,
+      quantity: 2
+    });
+    const { _id } = await createOrderWithShippingAddressGraphQLRequest(
+      createdRequest,
+      shippingAddressInput
+    );
+    await loginUser(createdRequest, adminUserCreateConfig);
+    const deleteOrder = await deleteOrderGraphQLRequest(createdRequest, {
+      order_id: _id
+    });
+    expect(deleteOrder).toBe(true);
+  });
 });
