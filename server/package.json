@@ -4,12 +4,12 @@
   "description": "",
   "main": "index.ts",
   "scripts": {
-    "prompt": "ts-node ./prompt.ts",
+    "prompt": "NODE_ENV=dev ts-node ./prompt.ts",
     "start": "ts-node ./server.ts",
     "server": "./node_modules/nodemon/bin/nodemon.js",
     "client": "npm run start --prefix ../client",
-    "dev": "concurrently \"npm run server\" \"npm run client\"",
-    "test": "jest --runInBand --forceExit --watchAll",
+    "dev": "NODE_ENV=dev concurrently \"npm run server\" \"npm run client\"",
+    "test": "NODE_ENV=test jest --runInBand --forceExit --watchAll",
     "lint": "tslint --project tsconfig.json --config tslint.json"
   },
   "author": "",

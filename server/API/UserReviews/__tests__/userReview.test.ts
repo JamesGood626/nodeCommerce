@@ -2,10 +2,9 @@ import * as request from "supertest";
 import { app } from "../../../app";
 import { UserReview } from "../Models/userReview";
 import { User } from "../../Accounts/Models/user";
-// import { Product } from "../../Products/Models/product";
 import { dropProductCollection } from "../../Products/__tests__/product.test";
-import { createUser } from "../../../Services/auth";
-import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
+import { createUser } from "../../../AuthServices/auth";
+import { dropUserCollection } from "../../../AuthServices/testUtils/test-helpers";
 
 const allUserReviewsGraphQLRequest = async (createdRequest): Promise<any> => {
   const firstPostEditData = {

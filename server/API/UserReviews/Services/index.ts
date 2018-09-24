@@ -67,6 +67,7 @@ export const deleteReview = async ({ _id }, user) => {
       if (result) {
         return result.remove();
       }
+      return;
     });
     return reviewDeleted as any;
   }

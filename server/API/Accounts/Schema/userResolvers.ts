@@ -1,5 +1,5 @@
 import { IUserModel } from "../Models/user";
-import { createUser, login, updatePassword } from "../../../Services/auth";
+import { createUser, login, updatePassword } from "../../../AuthServices/auth";
 import { getAllUsers } from "../Services";
 import { retrieveOrderList } from "../Services";
 

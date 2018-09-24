@@ -1,4 +1,3 @@
-// import { User } from "../../Accounts/Models/user";
 import { User } from "../../Accounts/Models/user";
 import { Product, IProduct, IProductModel } from "../Models/product";
 
@@ -7,7 +6,7 @@ export const getAllProducts = async () => {
   return allProducts;
 };
 
-export const createProduct = (input, user) => {
+export const createProduct = input => {
   return new Promise(async (resolve, reject) => {
     const product = new Product(input);
     await product.save();
@@ -15,7 +14,7 @@ export const createProduct = (input, user) => {
   });
 };
 
-export const editProduct = async (input, user) => {
+export const editProduct = async input => {
   return new Promise(async (resolve, reject) => {
     const { product_id } = input;
     const product = await Product.findByIdAndUpdate(
@@ -33,12 +32,13 @@ export const editProduct = async (input, user) => {
   });
 };
 
-export const deleteProduct = ({ product_id }, user) => {
+export const deleteProduct = ({ product_id }) => {
   return new Promise(async (resolve, reject) => {
     const productDeleted = await Product.findById(product_id).then(result => {
       if (result) {
         return result.remove();
       }
+      return;
     });
     return resolve(productDeleted as any);
   });

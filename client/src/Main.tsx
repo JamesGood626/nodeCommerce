@@ -6,6 +6,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 import home from "./AppPages/home";
 import Login from "./AppPages/Login";
 import Register from "./AppPages/Register";
+import ImageUpload from "./AppPages/ImageUpload";
 
 import "./App.css";
 
@@ -17,6 +18,7 @@ class Main extends React.Component {
           <Route exact={true} path="/" component={home} />
           <Route path="/register" component={Register} />
           <Route path="/login" component={Login} />
+          <Route path="/image-upload" component={ImageUpload} />
         </Switch>
       </BrowserRouter>
     );

@@ -1,8 +1,8 @@
 import * as request from "supertest";
 import { app } from "../../../app";
-import { createUser } from "../../../Services/auth";
 import { Category } from "../Models/category";
-import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
+import { createUser } from "../../../AuthServices/auth";
+import { dropUserCollection } from "../../../AuthServices/testUtils/test-helpers";
 
 const dropCategoryCollection = async () => {
   await Category.remove({}, err =>

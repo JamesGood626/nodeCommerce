@@ -2,7 +2,7 @@ import { Order, IOrderModel } from "../Models/order";
 import { User, IUserModel } from "../../Accounts/Models/user";
 
 const removeCartAndSaveOrderOnUser = async (user, orderId) => {
-  await User.findOne({ email: user.email }).then(async user => {
+  return await User.findOne({ email: user.email }).then(async user => {
     (user as any).cart.remove();
     (user as any).orders.push(orderId);
     return await (user as any).save().catch(err => {
@@ -107,6 +107,7 @@ export const deleteOrder = ({ order_id }, user) => {
       if (result) {
         return result.remove();
       }
+      return;
     });
     return resolve(orderDeleted as any);
   });

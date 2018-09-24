@@ -10,6 +10,11 @@ import {
 } from "../Services";
 import { retrieveProductsList } from "../../Cart/Services";
 
+// If I want to create a ghost user.. then I'll need to modify the createOrderWithShippingAddress
+// resolver to accomodate the ghost user.
+// Also, for maintaining items added to the ghost user's cart. You should just be able to make use
+// of localStorage.
+// Will worry about this once I actually have a client side to test this with.
 export const orderResolvers = {
   Query: {
     allOrders: (_, __, { req }): any => {

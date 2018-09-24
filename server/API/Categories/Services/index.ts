@@ -19,6 +19,7 @@ export const deleteCategory = ({ _id }) => {
       if (result) {
         return result.remove();
       }
+      return;
     });
     return resolve(categoryDeleted as any);
   });

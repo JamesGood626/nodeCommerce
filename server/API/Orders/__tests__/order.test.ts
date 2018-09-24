@@ -1,10 +1,10 @@
 import * as request from "supertest";
 import { app } from "../../../app";
-import { createUser } from "../../../Services/auth";
 import { User } from "../../Accounts/Models/user";
 import { Order } from "../Models/order";
 import { Product } from "../../products/Models/product";
-import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
+import { createUser } from "../../../AuthServices/auth";
+import { dropUserCollection } from "../../../AuthServices/testUtils/test-helpers";
 import { dropProductCollection } from "../../Products/__tests__/product.test";
 import {
   createCartGraphQLRequest,

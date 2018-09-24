@@ -1,4 +1,4 @@
-import { Schema } from "mongoose";
+import { isUserAuthenticated } from "../../middlewareResolvers";
 import {
   createCart,
   editCart,
@@ -22,6 +22,7 @@ export const cartResolvers = {
       { input: { product_id, price, quantity, sale_price } },
       { req }
     ) => {
+      isUserAuthenticated(req.user);
       return await createCart(
         { product_id, price, quantity, sale_price },
         req.user
@@ -32,12 +33,14 @@ export const cartResolvers = {
       { input: { product_id, price, quantity, sale_price } },
       { req }
     ) => {
+      isUserAuthenticated(req.user);
       return await editCart(
         { product_id, price, quantity, sale_price },
         req.user
       );
     },
     removeProduct: async (_, { input: { product_id, price } }, { req }) => {
+      isUserAuthenticated(req.user);
       return await removeProduct({ product_id, price }, req.user);
     }
   },

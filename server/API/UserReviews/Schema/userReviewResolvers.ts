@@ -2,7 +2,7 @@ import { isUserAuthenticated, isAdmin } from "../../middlewareResolvers";
 import {
   allUserReviews,
   createReview,
-  editReview
+  editReview,
   deleteReview
 } from "../Services";
 

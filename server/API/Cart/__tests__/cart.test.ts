@@ -2,22 +2,9 @@ import * as request from "supertest";
 import { app } from "../../../app";
 import { User } from "../../Accounts/Models/user";
 import { Product } from "../../Products/Models/product";
-import { createUser } from "../../../Services/auth";
-import { dropUserCollection } from "../../../Services/testUtils/test-helpers";
+import { createUser } from "../../../AuthServices/auth";
+import { dropUserCollection } from "../../../AuthServices/testUtils/test-helpers";
 import { dropProductCollection } from "../../Products/__tests__/product.test";
-// Oh yeah.. cart is just a Sub Document on the User Model.
-// Create and Add product to cart
-// ****
-// The product being added to cart should be in client's cache
-// So when the post is made, the information from cache will be used
-// as arguments to fulfill the mutation request.
-// params: price/ sale_price (if applicable)
-// ****
-// Remove product from cart
-// Retrieve all details of a cart.
-// Edit quantity of a particular product in cart.
-// Delete cart when it's empty (this will only be executed on removal of last item
-// not a distinct post request)
 
 export interface IProductCreated {
   productId: string;
