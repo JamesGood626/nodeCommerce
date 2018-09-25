@@ -3,7 +3,6 @@
 import { ApolloServer, gql } from "apollo-server-express";
 import * as bcrypt from "bcrypt";
 import * as bodyParser from "body-parser";
-// import * as flash from 'connect-flash';
 import * as connectRedis from "connect-redis";
 import * as expressGraphQL from "express-graphql";
 import * as session from "express-session";
@@ -11,8 +10,6 @@ import * as mongoose from "mongoose";
 import * as passport from "passport";
 import * as passportLocal from "passport-local";
 import * as redis from "redis";
-// import { MergedGraphQLSchema } from "../API";
-// import Schema from '../API/Accounts/Schema'
 import { User } from "../API/Accounts/Models/user";
 import { REDIS_SECRET, MONGO_URI } from "../Config";
 import { typeDefs, resolvers } from "../API";
@@ -21,8 +18,6 @@ import { typeDefs, resolvers } from "../API";
 
 const RedisStore = connectRedis(session);
 const LocalStrategy = passportLocal.Strategy;
-
-// Look into cors
 
 export const initBodyParser = (app: any) => {
   // app.use(cors())

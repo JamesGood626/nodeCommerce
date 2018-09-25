@@ -65,7 +65,6 @@ const upload = multer({
 });
 
 const resize = async (req, res, next) => {
-  console.log("REG IN RESIZE: ", req.files);
   if (!req.files) {
     next();
   }
@@ -74,7 +73,6 @@ const resize = async (req, res, next) => {
     const mimeType = file.mimetype.split("/")[1];
     const fileExtensionToStoreInDB = `${uuidv4()}.${mimeType}`;
     jimpResize(file, fileExtensionToStoreInDB);
-    console.log("The file extension single: ", fileExtensionToStoreInDB);
     return fileExtensionToStoreInDB;
   });
   req.body.images = fileExtensionsArr;
@@ -89,7 +87,6 @@ const jimpResize = async (file, fileExt) => {
     if (err) {
       console.log("Error getting photo buffer: ", err);
     }
-    console.log("THE BUFFER: ", buffer);
     return buffer;
   });
   await uploadToS3(photoBuffer, fileExt);
@@ -98,8 +95,7 @@ const jimpResize = async (file, fileExt) => {
 export const productRouter = (app): void => {
   const cpUpload = upload.array("image-upload", 10);
   app.post(`/admin/create/product`, cpUpload, resize, async (req, res) => {
-    console.log("In create model multi post view: ", req.body.images);
-    console.log("AND JUST THE REQ.body: ", req.body);
+    // console.log("In create model multi post view: ", req.body.images);
     try {
       createProduct(req.body);
       res.status(200);

@@ -48,7 +48,6 @@ export const userResolvers = {
       // parentValue will the be returned value from any of the queries/mutations that will
       // be accessible in here whenever the products field is a requested return value
       // on the query/mutation.
-      console.log("HITTING THE USER ORDER RESOLVER: ", parentValue);
       return await retrieveOrderList(parentValue.order);
     }
   }
